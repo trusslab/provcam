@@ -1,0 +1,872 @@
+// /delete-node/ &amba_pl;
+
+// / {
+//     amba_pl: amba_pl@0 {
+//         #address-cells = <2>;
+//         #size-cells = <2>;
+//         compatible = "simple-bus";
+//         ranges ;
+//         axi_timer_0: timer@a0053000 {
+//             clock-frequency = <99990005>;
+//             clock-names = "s_axi_aclk";
+//             clocks = <&zynqmp_clk 71>;
+//             compatible = "xlnx,axi-timer-2.0", "xlnx,xps-timer-1.00.a";
+//             interrupt-names = "interrupt";
+//             interrupt-parent = <&gic>;
+//             interrupts = <0 110 4>;
+//             reg = <0x0 0xa0053000 0x0 0x1000>;
+//             xlnx,count-width = <0x20>;
+//             xlnx,gen0-assert = <0x1>;
+//             xlnx,gen1-assert = <0x1>;
+//             xlnx,one-timer-only = <0x0>;
+//             xlnx,trig0-assert = <0x1>;
+//             xlnx,trig1-assert = <0x1>;
+//         };
+//         // hdmi_output_v_frmbuf_rd_0: v_frmbuf_rd@a0040000 {
+//         //     #dma-cells = <1>;
+//         //     clock-names = "ap_clk";
+//         //     clocks = <&misc_clk_0>;
+//         //     compatible = "xlnx,v-frmbuf-rd-2.1", "xlnx,axi-frmbuf-rd-v2.1";
+//         //     interrupt-names = "interrupt";
+//         //     interrupt-parent = <&gic>;
+//         //     interrupts = <0 89 4>;
+//         //     reg = <0x0 0xa0040000 0x0 0x10000>;
+//         //     xlnx,dma-addr-width = <64>;
+//         //     xlnx,dma-align = <16>;
+//         //     xlnx,max-height = <2160>;
+//         //     xlnx,max-width = <3840>;
+//         //     xlnx,pixels-per-clock = <2>;
+//         //     xlnx,s-axi-ctrl-addr-width = <0x7>;
+//         //     xlnx,s-axi-ctrl-data-width = <0x20>;
+//         //     xlnx,vid-formats = "xbgr8888", "xrgb8888", "bgr888", "uyvy", "y8", "vuy888", "xvuy8888", "yuyv", "nv12", "nv16";
+//         //     xlnx,video-width = <8>;
+//         // };
+//         misc_clk_0: misc_clk_0 {
+//             #clock-cells = <0>;
+//             clock-frequency = <300000000>;
+//             compatible = "fixed-clock";
+//         };
+//         // hdmi_output_v_hdmi_tx_ss_0: v_hdmi_tx_ss@a0020000 {
+//         //     clock-names = "s_axi_cpu_aclk", "link_clk", "s_axis_audio_aclk", "video_clk", "s_axis_video_aclk";
+//         //     clocks = <&zynqmp_clk 71>, <&misc_clk_1>, <&zynqmp_clk 71>, <&misc_clk_2>, <&misc_clk_0>;
+//         //     compatible = "xlnx,v-hdmi-tx-ss-3.1", "xlnx,v-hdmi-tx-ss-3.1";
+//         //     interrupt-names = "irq";
+//         //     interrupt-parent = <&gic>;
+//         //     interrupts = <0 93 4>;
+//         //     reg = <0x0 0xa0020000 0x0 0x20000>;
+//         // };
+//         misc_clk_1: misc_clk_1 {
+//             #clock-cells = <0>;
+//             clock-frequency = <148500000>;
+//             compatible = "fixed-clock";
+//         };
+//         misc_clk_2: misc_clk_2 {
+//             #clock-cells = <0>;
+//             clock-frequency = <297000000>;
+//             compatible = "fixed-clock";
+//         };
+//         // hdmi_output_v_mix_0: v_mix@a0070000 {
+//         //     clock-names = "ap_clk";
+//         //     clocks = <&misc_clk_0>;
+//         //     compatible = "xlnx,v-mix-5.0", "xlnx,mixer-3.0", "xlnx,mixer-4.0", "xlnx,mixer-5.0";
+//         //     interrupt-names = "interrupt";
+//         //     interrupt-parent = <&gic>;
+//         //     interrupts = <0 95 4>;
+//         //     reg = <0x0 0xa0070000 0x0 0x10000>;
+//         //     xlnx,bpc = <8>;
+//         //     xlnx,dma-addr-width = <64>;
+//         //     xlnx,num-layers = <9>;
+//         //     xlnx,ppc = <2>;
+//         // };
+//         mipi_csi2_rx_mipi_csi2_rx_subsystem_0: mipi_csi2_rx_subsystem@a00f0000 {
+//             clock-names = "lite_aclk", "dphy_clk_200M", "video_aclk";
+//             clocks = <&zynqmp_clk 71>, <&misc_clk_3>, <&zynqmp_clk 72>;
+//             compatible = "xlnx,mipi-csi2-rx-subsystem-5.0";
+//             interrupt-names = "csirxss_csi_irq";
+//             interrupt-parent = <&gic>;
+//             interrupts = <0 105 4>;
+//             reg = <0x0 0xa00f0000 0x0 0x10000>;
+//             xlnx,axis-tdata-width = <32>;
+//             xlnx,cal-mode = "NONE";
+//             xlnx,clk-io-swap = "false";
+//             xlnx,clk-lane-io-position = <0x1a>;
+//             xlnx,clk-lp-io-swap = "false";
+//             xlnx,csi-en-activelanes = "true";
+//             xlnx,csi-en-crc = "true";
+//             xlnx,csi-filter-userdatatype = "true";
+//             xlnx,csi-opt1-regs = "false";
+//             xlnx,csi-pxl-format = "RAW10";
+//             xlnx,csi2rx-dbg = <0x0>;
+//             xlnx,data-lane0-io-position = <0x2d>;
+//             xlnx,data-lane1-io-position = <0x20>;
+//             xlnx,data-lane2-io-position = <0x11>;
+//             xlnx,data-lane3-io-position = <0x29>;
+//             xlnx,dl0-io-swap = "false";
+//             xlnx,dl0-lp-io-swap = "false";
+//             xlnx,dl1-io-swap = "false";
+//             xlnx,dl1-lp-io-swap = "false";
+//             xlnx,dl2-io-swap = "false";
+//             xlnx,dl2-lp-io-swap = "false";
+//             xlnx,dl3-io-swap = "false";
+//             xlnx,dl3-lp-io-swap = "false";
+//             xlnx,dphy-lanes = <0x4>;
+//             xlnx,dphy-mode = "SLAVE";
+//             xlnx,en-active-lanes ;
+//             xlnx,en-bg0-pin0 = "false";
+//             xlnx,en-bg0-pin6 = "false";
+//             xlnx,en-bg1-pin0 = "true";
+//             xlnx,en-bg1-pin6 = "false";
+//             xlnx,en-bg2-pin0 = "false";
+//             xlnx,en-bg2-pin6 = "false";
+//             xlnx,en-bg3-pin0 = "true";
+//             xlnx,en-bg3-pin6 = "false";
+//             xlnx,en-clk300m = "false";
+//             xlnx,en-cnts-byte-clk = "false";
+//             xlnx,en-csi-v2-0 = "false";
+//             xlnx,en-exdesigns = "false";
+//             xlnx,en-timeout-regs = "false";
+//             xlnx,en-vcx = "false";
+//             xlnx,esc-timeout = <0x6400>;
+//             xlnx,exdes-board = "ZCU102";
+//             xlnx,exdes-config = "MIPI_Video_Pipe_Camera_to_Display";
+//             xlnx,exdes-fmc = "LI-IMX274MIPI-FMC V1.0 Single Sensor";
+//             xlnx,fifo-rd-en-control = "true";
+//             xlnx,hs-line-rate = <0x5a0>;
+//             xlnx,hs-settle-ns = <0x8d>;
+//             xlnx,hs-timeout = <0x10005>;
+//             xlnx,idly-group-name = "mipi_csi2rx_idly_group";
+//             xlnx,idly-tap = <0x1>;
+//             xlnx,init = <0x186a0>;
+//             xlnx,is-7series = "false";
+//             xlnx,is-versal = "false";
+//             xlnx,lprx-disable-extport = <0x0>;
+//             xlnx,max-lanes = <4>;
+//             xlnx,mipi-slv-int = <0x0>;
+//             xlnx,ooc-vid-clk = "6.666";
+//             xlnx,ppc = <2>;
+//             xlnx,rcve-alt-deskew-seq = "false";
+//             xlnx,rcve-deskew-seq = "false";
+//             xlnx,share-idlyctrl = "false";
+//             xlnx,stretch-line-rate = <0xdac>;
+//             xlnx,vc = <4>;
+//             xlnx,vfb ;
+//         };
+//         misc_clk_3: misc_clk_3 {
+//             #clock-cells = <0>;
+//             clock-frequency = <200000000>;
+//             compatible = "fixed-clock";
+//         };
+//         mipi_csi2_rx_v_demosaic_0: v_demosaic@a0250000 {
+//             clock-names = "ap_clk";
+//             clocks = <&zynqmp_clk 72>;
+//             compatible = "xlnx,v-demosaic-1.0", "xlnx,v-demosaic";
+//             reg = <0x0 0xa0250000 0x0 0x10000>;
+//             xlnx,s-axi-ctrl-addr-width = <0x6>;
+//             xlnx,s-axi-ctrl-data-width = <0x20>;
+//         };
+//         mipi_csi2_rx_v_frmbuf_wr_0: v_frmbuf_wr@a0260000 {
+//             #dma-cells = <1>;
+//             clock-names = "ap_clk";
+//             clocks = <&zynqmp_clk 72>;
+//             compatible = "xlnx,v-frmbuf-wr-2.1", "xlnx,axi-frmbuf-wr-v2.1";
+//             interrupt-names = "interrupt";
+//             interrupt-parent = <&gic>;
+//             interrupts = <0 106 4>;
+//             reg = <0x0 0xa0260000 0x0 0x10000>;
+//             xlnx,dma-addr-width = <32>;
+//             xlnx,dma-align = <16>;
+//             xlnx,max-height = <2160>;
+//             xlnx,max-width = <3840>;
+//             xlnx,pixels-per-clock = <2>;
+//             xlnx,s-axi-ctrl-addr-width = <0x7>;
+//             xlnx,s-axi-ctrl-data-width = <0x20>;
+//             xlnx,vid-formats = "bgr888", "xbgr8888", "xrgb8888", "uyvy", "y8", "vuy888", "xvuy8888", "yuyv", "nv12", "nv16";
+//             xlnx,video-width = <8>;
+//         };
+//         mipi_csi2_rx_v_gamma_lut_0: v_gamma_lut@a0270000 {
+//             clock-names = "ap_clk";
+//             clocks = <&zynqmp_clk 72>;
+//             compatible = "xlnx,v-gamma-lut-1.0", "xlnx,v-gamma-lut";
+//             reg = <0x0 0xa0270000 0x0 0x10000>;
+//             xlnx,max-height = <2160>;
+//             xlnx,max-width = <3840>;
+//             xlnx,s-axi-ctrl-addr-width = <13>;
+//             xlnx,s-axi-ctrl-data-width = <32>;
+//         };
+//         mipi_csi2_rx_v_proc_ss_csc: v_proc_ss@a0240000 {
+//             clock-names = "aclk";
+//             clocks = <&zynqmp_clk 72>;
+//             compatible = "xlnx,v-proc-ss-2.2", "xlnx,vpss-csc", "xlnx,v-vpss-csc";
+//             reg = <0x0 0xa0240000 0x0 0x10000>;
+//             xlnx,colorspace-support = <0>;
+//             xlnx,csc-enable-window = "false";
+//             xlnx,max-height = <2160>;
+//             xlnx,max-width = <3840>;
+//             xlnx,num-video-components = <3>;
+//             xlnx,samples-per-clk = <2>;
+//             xlnx,topology = <3>;
+//             xlnx,use-uram = <0>;
+//             xlnx,video-width = <8>;
+//         };
+//         mipi_csi2_rx_v_proc_ss_scaler: v_proc_ss@a0200000 {
+//             clock-names = "aclk_axis", "aclk_ctrl";
+//             clocks = <&zynqmp_clk 72>, <&zynqmp_clk 72>;
+//             compatible = "xlnx,v-proc-ss-2.2", "xlnx,vpss-scaler-2.2", "xlnx,v-vpss-scaler-2.2", "xlnx,vpss-scaler";
+//             reg = <0x0 0xa0200000 0x0 0x40000>;
+//             xlnx,colorspace-support = <0>;
+//             xlnx,csc-enable-window = "true";
+//             xlnx,enable-csc = "true";
+//             xlnx,h-scaler-phases = <64>;
+//             xlnx,h-scaler-taps = <8>;
+//             xlnx,max-height = <2160>;
+//             xlnx,max-num-phases = <64>;
+//             xlnx,max-width = <3840>;
+//             xlnx,num-hori-taps = <8>;
+//             xlnx,num-vert-taps = <8>;
+//             xlnx,pix-per-clk = <2>;
+//             xlnx,samples-per-clk = <2>;
+//             xlnx,scaler-algorithm = <2>;
+//             xlnx,topology = <0>;
+//             xlnx,use-uram = <0>;
+//             xlnx,v-scaler-phases = <64>;
+//             xlnx,v-scaler-taps = <8>;
+//             xlnx,video-width = <8>;
+//         };
+//         // mpsoc_ss_hdmi_ctrl_iic: i2c@a0050000 {
+//         //     #address-cells = <1>;
+//         //     #size-cells = <0>;
+//         //     clock-names = "s_axi_aclk";
+//         //     clocks = <&zynqmp_clk 71>;
+//         //     compatible = "xlnx,axi-iic-2.0", "xlnx,xps-iic-2.00.a";
+//         //     interrupt-names = "iic2intc_irpt";
+//         //     interrupt-parent = <&gic>;
+//         //     interrupts = <0 94 4>;
+//         //     reg = <0x0 0xa0050000 0x0 0x1000>;
+//         // };
+//         sensor_iic_0: i2c@a0051000 {
+//             #address-cells = <1>;
+//             #size-cells = <0>;
+//             clock-names = "s_axi_aclk";
+//             clocks = <&zynqmp_clk 71>;
+//             compatible = "xlnx,axi-iic-2.0", "xlnx,xps-iic-2.00.a";
+//             interrupt-names = "iic2intc_irpt";
+//             interrupt-parent = <&gic>;
+//             interrupts = <0 107 4>;
+//             reg = <0x0 0xa0051000 0x0 0x1000>;
+//         };
+//         v_scenechange_0: v_scenechange@a02e0000 {
+//             #address-cells = <1>;
+//             #dma-cells = <1>;
+//             #size-cells = <0>;
+//             clock-names = "ap_clk";
+//             clocks = <&misc_clk_0>;
+//             compatible = "xlnx,v-scd";
+//             interrupt-names = "interrupt";
+//             interrupt-parent = <&gic>;
+//             interrupts = <0 109 4>;
+//             reg = <0x0 0xa02e0000 0x0 0x10000>;
+//             xlnx,addrwidth = <0x40>;
+//             xlnx,max-data-width = <8>;
+//             xlnx,memorybased ;
+//             xlnx,numstreams = <8>;
+//             subdev@0 {
+//                 port_0: port@0 {
+//                     reg = <0>;
+//                     scd_in0: endpoint {
+//                         remote-endpoint = <&vcap0_out0>;
+//                     };
+//                 };
+//             };
+//             subdev@1 {
+//                 port_1: port@0 {
+//                     reg = <0>;
+//                     scd_in1: endpoint {
+//                         remote-endpoint = <&vcap0_out1>;
+//                     };
+//                 };
+//             };
+//             subdev@2 {
+//                 port_2: port@0 {
+//                     reg = <0>;
+//                     scd_in2: endpoint {
+//                         remote-endpoint = <&vcap0_out2>;
+//                     };
+//                 };
+//             };
+//             subdev@3 {
+//                 port_3: port@0 {
+//                     reg = <0>;
+//                     scd_in3: endpoint {
+//                         remote-endpoint = <&vcap0_out3>;
+//                     };
+//                 };
+//             };
+//             subdev@4 {
+//                 port_4: port@0 {
+//                     reg = <0>;
+//                     scd_in4: endpoint {
+//                         remote-endpoint = <&vcap0_out4>;
+//                     };
+//                 };
+//             };
+//             subdev@5 {
+//                 port_5: port@0 {
+//                     reg = <0>;
+//                     scd_in5: endpoint {
+//                         remote-endpoint = <&vcap0_out5>;
+//                     };
+//                 };
+//             };
+//             subdev@6 {
+//                 port_6: port@0 {
+//                     reg = <0>;
+//                     scd_in6: endpoint {
+//                         remote-endpoint = <&vcap0_out6>;
+//                     };
+//                 };
+//             };
+//             subdev@7 {
+//                 port_7: port@0 {
+//                     reg = <0>;
+//                     scd_in7: endpoint {
+//                         remote-endpoint = <&vcap0_out7>;
+//                     };
+//                 };
+//             };
+//         };
+//         vcu_0: vcu@a0100000 {
+//             #address-cells = <2>;
+//             #clock-cells = <1>;
+//             #size-cells = <2>;
+//             clock-names = "pll_ref", "aclk", "vcu_core_enc", "vcu_core_dec", "vcu_mcu_enc", "vcu_mcu_dec";
+//             clocks = <&misc_clk_4>, <&zynqmp_clk 71>, <&vcu_0 1>, <&vcu_0 2>, <&vcu_0 3>, <&vcu_0 4>;
+//             compatible = "xlnx,vcu-1.2", "xlnx,vcu";
+//             interrupt-names = "vcu_host_interrupt";
+//             interrupt-parent = <&gic>;
+//             interrupts = <0 96 4>;
+//             ranges ;
+//             reg = <0x0 0xa0140000 0x0 0x1000>, <0x0 0xa0141000 0x0 0x1000>;
+//             reg-names = "vcu_slcr", "logicore";
+//             reset-gpios = <&gpio 119 0>;
+//             encoder: al5e@a0100000 {
+//                 compatible = "al,al5e-1.2", "al,al5e";
+//                 // compatible = "al,al5e-1.2-myles", "al,al5e-myles";
+//                 interrupt-parent = <&gic>;
+//                 interrupts = <0 96 4>;
+//                 reg = <0x0 0xa0100000 0x0 0x10000>;
+//             };
+//             decoder: al5d@a0120000 {
+//                 compatible = "al,al5d-1.2", "al,al5d";
+//                 // compatible = "al,al5d-1.2-myles", "al,al5d-myles";
+//                 interrupt-parent = <&gic>;
+//                 interrupts = <0 96 4>;
+//                 reg = <0x0 0xa0120000 0x0 0x10000>;
+//             };
+//         };
+//         misc_clk_4: misc_clk_4 {
+//             #clock-cells = <0>;
+//             clock-frequency = <33333333>;
+//             compatible = "fixed-clock";
+//         };
+//         // vid_phy_controller: vid_phy_controller@a0060000 {
+//         //     clock-names = "mgtrefclk0_pad_p_in", "mgtrefclk0_pad_n_in", "vid_phy_tx_axi4s_aclk", "vid_phy_sb_aclk", "vid_phy_axi4lite_aclk", "drpclk";
+//         //     clocks = <&misc_clk_5>, <&misc_clk_5>, <&misc_clk_1>, <&zynqmp_clk 71>, <&zynqmp_clk 71>, <&zynqmp_clk 71>;
+//         //     compatible = "xlnx,vid-phy-controller-2.2", "xlnx,vid-phy-controller-2.1";
+//         //     interrupt-names = "irq";
+//         //     interrupt-parent = <&gic>;
+//         //     interrupts = <0 92 4>;
+//         //     reg = <0x0 0xa0060000 0x0 0x10000>;
+//         //     xlnx,hdmi-fast-switch = <1>;
+//         //     xlnx,input-pixels-per-clock = <2>;
+//         //     xlnx,nidru = <0>;
+//         //     xlnx,nidru-refclk-sel = <5>;
+//         //     xlnx,rx-no-of-channels = <3>;
+//         //     xlnx,rx-pll-selection = <0>;
+//         //     xlnx,rx-protocol = <3>;
+//         //     xlnx,rx-refclk-sel = <1>;
+//         //     xlnx,transceiver-type = <5>;
+//         //     xlnx,transceiver-width = <2>;
+//         //     xlnx,tx-buffer-bypass = <1>;
+//         //     xlnx,tx-no-of-channels = <3>;
+//         //     xlnx,tx-pll-selection = <6>;
+//         //     xlnx,tx-protocol = <1>;
+//         //     xlnx,tx-refclk-sel = <0>;
+//         //     xlnx,use-gt-ch4-hdmi = <0>;
+//         //     vphy_lane0: vphy_lane@0 {
+//         //         #phy-cells = <4>;
+//         //     };
+//         //     vphy_lane1: vphy_lane@1 {
+//         //         #phy-cells = <4>;
+//         //     };
+//         //     vphy_lane2: vphy_lane@2 {
+//         //         #phy-cells = <4>;
+//         //     };
+//         //     vphy_lane3: vphy_lane@3 {
+//         //         #phy-cells = <4>;
+//         //     };
+//         // };
+//         misc_clk_5: misc_clk_5 {
+//             #clock-cells = <0>;
+//             clock-frequency = <100000000>;
+//             compatible = "fixed-clock";
+//         };
+//         videocap: video_cap {
+//             compatible = "xlnx,video";
+//             dma-names = "port0", "port1", "port2", "port3", "port4", "port5", "port6", "port7";
+//             dmas = <&v_scenechange_0 0>, <&v_scenechange_0 1>, <&v_scenechange_0 2>, <&v_scenechange_0 3>, <&v_scenechange_0 4>, <&v_scenechange_0 5>, <&v_scenechange_0 6>, <&v_scenechange_0 7>;
+//             ports_vcap: ports {
+//                 #address-cells = <1>;
+//                 #size-cells = <0>;
+//                 port0: port@0 {
+//                     direction = "output";
+//                     reg = <0>;
+//                     vcap0_out0: endpoint {
+//                         remote-endpoint = <&scd_in0>;
+//                     };
+//                 };
+//                 port1: port@1 {
+//                     direction = "output";
+//                     reg = <1>;
+//                     vcap0_out1: endpoint {
+//                         remote-endpoint = <&scd_in1>;
+//                     };
+//                 };
+//                 port2: port@2 {
+//                     direction = "output";
+//                     reg = <2>;
+//                     vcap0_out2: endpoint {
+//                         remote-endpoint = <&scd_in2>;
+//                     };
+//                 };
+//                 port3: port@3 {
+//                     direction = "output";
+//                     reg = <3>;
+//                     vcap0_out3: endpoint {
+//                         remote-endpoint = <&scd_in3>;
+//                     };
+//                 };
+//                 port4: port@4 {
+//                     direction = "output";
+//                     reg = <4>;
+//                     vcap0_out4: endpoint {
+//                         remote-endpoint = <&scd_in4>;
+//                     };
+//                 };
+//                 port5: port@5 {
+//                     direction = "output";
+//                     reg = <5>;
+//                     vcap0_out5: endpoint {
+//                         remote-endpoint = <&scd_in5>;
+//                     };
+//                 };
+//                 port6: port@6 {
+//                     direction = "output";
+//                     reg = <6>;
+//                     vcap0_out6: endpoint {
+//                         remote-endpoint = <&scd_in6>;
+//                     };
+//                 };
+//                 port7: port@7 {
+//                     direction = "output";
+//                     reg = <7>;
+//                     vcap0_out7: endpoint {
+//                         remote-endpoint = <&scd_in7>;
+//                     };
+//                 };
+//             };
+//         };
+//     };
+// };
+
+#include "common.dtsi"
+#include "li-imx274mipi-fmc.dtsi"
+// #include "hdmi-misc.dtsi"
+#include "apm.dtsi"
+
+&i2c1 {
+	i2c-mux@74 {
+	/delete-node/   i2c@2;
+	};
+};
+
+// &axi_intc_0 {
+// 	interrupt-parent = <&gic>;
+// 	interrupts = <0 108 4>;
+// };
+
+// &vid_phy_controller {
+//         clock-names = "vid_phy_axi4lite_aclk", "dru-clk";
+//         clocks = <&vid_s_axi_clk>, <&si570_2>;
+// };
+
+// &mpsoc_ss_hdmi_ctrl_iic {
+//         clocks = <&vid_s_axi_clk>;
+// };
+
+// &hdmi_output_v_frmbuf_rd_0 {
+// 	reset-gpios = <&gpio 79 1>;
+// };
+
+// &hdmi_output_v_hdmi_tx_ss_0 {
+// 	clock-names = "s_axi_cpu_aclk", "s_axis_video_aclk", "txref-clk", "retimer-clk";
+// 	clocks = <&vid_s_axi_clk>, <&vid_stream_clk>, <&si5319 0>, <&dp159>;
+// 	phy-names = "hdmi-phy0", "hdmi-phy1", "hdmi-phy2";
+// 	phys = <&vphy_lane0 0 1 1 1>, <&vphy_lane1 0 1 1 1>, <&vphy_lane2 0 1 1 1>;
+// 	reg = <0x0 0xa0020000 0x0 0x20000>;
+// 	xlnx,input-pixels-per-clock = <2>;
+// 	xlnx,max-bits-per-component = <8>;
+// 	hdmitx_ports: ports {
+// 		#address-cells = <1>;
+// 		#size-cells = <0>;
+// 		encoder_hdmi_port: port@0 {
+// 			reg = <0>;
+// 			hdmi_encoder: endpoint {
+// 				remote-endpoint = <&mixer_crtc>;
+// 			};
+// 		};
+// 	};
+// };
+
+// &hdmi_output_v_mix_0 {
+// 	reset-gpios = <&gpio 98 1>;
+// 	/delete-property/ clock-names;
+// 	clocks = <&si5319 0>;
+// 	xlnx,dma-addr-width = <64>;
+
+// 	crtc_mixer_port: port@0 {
+// 		reg = <0>;
+// 		mixer_crtc: endpoint {
+// 			remote-endpoint = <&hdmi_encoder>;
+// 		};
+// 	};
+// 	xx_mix_master: layer_0 {
+// 		xlnx,layer-id = <0>;
+// 		xlnx,layer-max-height = <2160>;
+// 		xlnx,layer-max-width = <3840>;
+// 		xlnx,layer-primary ;
+// 		xlnx,vformat = "BG24";
+// 	};
+// 	xx_mix_overlay_1: layer_1 {
+// 		xlnx,layer-id = <1>;
+// 		xlnx,layer-max-width = <1920>;
+// 		xlnx,vformat = "NV12";
+// 	};
+// 	xx_mix_overlay_2: layer_2 {
+// 		xlnx,layer-id = <2>;
+// 		xlnx,layer-max-width = <1920>;
+// 		xlnx,vformat = "NV12";
+// 	};
+// 	xx_mix_overlay_3: layer_3 {
+// 		xlnx,layer-id = <3>;
+// 		xlnx,layer-max-width = <1920>;
+// 		xlnx,vformat = "NV12";
+// 	};
+// 	xx_mix_overlay_4: layer_4 {
+// 		xlnx,layer-id = <4>;
+// 		xlnx,layer-max-width = <1920>;
+// 		xlnx,vformat = "NV12";
+// 	};
+// 	xx_mix_overlay_5: layer_5 {
+// 		xlnx,layer-id = <5>;
+// 		xlnx,layer-max-width = <1920>;
+// 		xlnx,vformat = "NV12";
+// 	};
+// 	xx_mix_overlay_6: layer_6 {
+// 		xlnx,layer-id = <6>;
+// 		xlnx,layer-max-width = <1920>;
+// 		xlnx,vformat = "NV12";
+// 	};
+// 	xx_mix_overlay_7: layer_7 {
+// 		xlnx,layer-id = <7>;
+// 		xlnx,layer-max-width = <1920>;
+// 		xlnx,vformat = "NV12";
+// 	};
+// 	xx_mix_overlay_8: layer_8 {
+// 		xlnx,layer-id = <8>;
+// 		xlnx,layer-max-width = <1920>;
+// 		xlnx,vformat = "NV12";
+// 	};
+// 	xx_mix_logo: logo {
+// 		xlnx,layer-id = <9>;
+// 		xlnx,logo-height = <64>;
+// 		xlnx,logo-width = <64>;
+// 	};
+// };
+
+// &sensor_iic_0 {
+//         clocks = <&vid_s_axi_clk>;
+// 		interrupt-parent = <&gic>;
+// };
+
+&sensor_iic_0 {
+// &cam_guard {
+    #address-cells = <1>;
+    #size-cells = <0>;
+    clock-names = "s_axi_aclk";
+    clocks = <&vid_s_axi_clk>;
+    compatible = "xlnx,axi2axilite-1.0", "xlnx,axi-iic-2.1", "xlnx,xps-iic-2.00.a";
+    interrupt-names = "iic2intc_irpt";
+    interrupt-parent = <&gic>;
+    interrupts = <0 107 4>;
+    reg = <0x0 0xa0051000 0x0 0x1000>;
+};
+
+&mipi_csi2_rx_mipi_csi2_rx_subsystem_0 {
+// &cam_guard {
+	// compatible = "xlnx,mipi-csi2-rx-subsystem-2.0";
+
+    // clock-names = "lite_aclk", "dphy_clk_200M", "video_aclk";
+    // clocks = <&zynqmp_clk 71>, <&misc_clk_1>, <&misc_clk_0>;
+    compatible = "xlnx,axi2axilite-1.0", "xlnx,mipi-csi2-rx-subsystem-2.0", "xlnx,mipi-csi2-rx-subsystem-5.2";
+    interrupt-names = "csirxss_csi_irq";
+    interrupt-parent = <&gic>;
+    interrupts = <0 105 4>;
+    reg = <0x0 0xa00f0000 0x0 0x10000>;
+    xlnx,axi-addr-width = <0x8>;
+    xlnx,axi-data-width = <0x20>;
+    
+    xlnx,axis-tdata-width = <32>;
+    xlnx,cal-mode = "NONE";
+    xlnx,clk-io-swap = "false";
+    xlnx,clk-lane-io-position = <0x1a>;
+    xlnx,clk-lp-io-swap = "false";
+    xlnx,csi-en-activelanes = "true";
+    xlnx,csi-en-crc = "true";
+    xlnx,csi-filter-userdatatype = "true";
+    xlnx,csi-opt1-regs = "false";
+    xlnx,csi-pxl-format = "RAW10";
+    xlnx,csi2rx-dbg = <0x0>;
+    xlnx,data-lane0-io-position = <0x2d>;
+    xlnx,data-lane1-io-position = <0x20>;
+    xlnx,data-lane2-io-position = <0x11>;
+    xlnx,data-lane3-io-position = <0x29>;
+    xlnx,dl0-io-swap = "false";
+    xlnx,dl0-lp-io-swap = "false";
+    xlnx,dl1-io-swap = "false";
+    xlnx,dl1-lp-io-swap = "false";
+    xlnx,dl2-io-swap = "false";
+    xlnx,dl2-lp-io-swap = "false";
+    xlnx,dl3-io-swap = "false";
+    xlnx,dl3-lp-io-swap = "false";
+    xlnx,dphy-lanes = <0x4>;
+    xlnx,dphy-mode = "SLAVE";
+    xlnx,en-7s-linerate-check = "true";
+    xlnx,en-active-lanes ;
+    xlnx,en-bg0-pin0 = "false";
+    xlnx,en-bg0-pin6 = "false";
+    xlnx,en-bg1-pin0 = "true";
+    xlnx,en-bg1-pin6 = "false";
+    xlnx,en-bg2-pin0 = "false";
+    xlnx,en-bg2-pin6 = "false";
+    xlnx,en-bg3-pin0 = "true";
+    xlnx,en-bg3-pin6 = "false";
+    xlnx,en-clk300m = "false";
+    xlnx,en-cnts-byte-clk = "false";
+    xlnx,en-csi-v2-0 = "false";
+    xlnx,en-exdesigns = "false";
+    xlnx,en-ext-tap = "false";
+    xlnx,en-rxppi-as-mon = "false";
+    xlnx,en-timeout-regs = "false";
+    xlnx,en-vcx = "false";
+    xlnx,esc-timeout = <0x6400>;
+    xlnx,exdes-board = "ZCU102";
+    xlnx,exdes-config = "MIPI_Video_Pipe_Camera_to_Display";
+    xlnx,exdes-fmc = "LI-IMX274MIPI-FMC V1.0 Single Sensor";
+    xlnx,exdesboard-version = <0x2>;
+    xlnx,fifo-rd-en-control = "true";
+    xlnx,hs-line-rate = <0x5a0>;
+    xlnx,hs-settle-ns = <0x8d>;
+    xlnx,hs-timeout = <0x10005>;
+    xlnx,idly-group-name = "mipi_csi2rx_idly_group";
+    xlnx,idly-tap = <0x1>;
+    xlnx,init = <0x186a0>;
+    xlnx,int-qor-check = <0x0>;
+    xlnx,is-7series = "false";
+    xlnx,is-versal = "false";
+    xlnx,lprx-disable-extport = <0x0>;
+    xlnx,max-lanes = <4>;
+    xlnx,mipi-slv-int = <0x0>;
+    xlnx,ooc-vid-clk = "6.666";
+    xlnx,ppc = <2>;
+    xlnx,rcve-alt-deskew-seq = "false";
+    xlnx,rcve-deskew-seq = "false";
+    xlnx,share-idlyctrl = "false";
+    xlnx,sprt-isp-bridge = "false";
+    xlnx,stretch-line-rate = <0xdac>;
+    xlnx,vc = <4>;
+    xlnx,vfb ;
+
+	csiss_ports: ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		csiss_port0: port@0 {
+			/* Fill cfa-pattern=rggb for raw data types, other fields video-format and video-width user needs to fill */
+			reg = <0>;
+			xlnx,cfa-pattern = "rggb";
+			xlnx,video-format = <12>;
+			xlnx,video-width = <8>;
+			csiss_out: endpoint {
+				remote-endpoint = <&demosaic_in>;
+			};
+		};
+		csiss_port1: port@1 {
+			/* Fill cfa-pattern=rggb for raw data types, other fields video-format,video-width user needs to fill */
+			/* User need to add something like remote-endpoint=<&out> under the node csiss_in:endpoint */
+			reg = <1>;
+			xlnx,cfa-pattern = "rggb";
+			xlnx,video-format = <12>;
+			xlnx,video-width = <8>;
+			csiss_in: endpoint {
+				data-lanes = <1 2 3 4>;
+				remote-endpoint = <&sensor_out>;
+
+			};
+		};
+	};
+
+};
+
+&mipi_csi2_rx_v_demosaic_0 {
+	reset-gpios = <&gpio 85 1>;
+	xlnx,max-height = <2160>;
+	xlnx,max-width = <3840>;
+	demosaic_ports: ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		demosaic_port0: port@0 {
+			/* For cfa-pattern=rggb user needs to fill as per BAYER format */
+			reg = <0>;
+			xlnx,cfa-pattern = "rggb";
+			xlnx,video-width = <8>;
+			demosaic_in: endpoint {
+				remote-endpoint = <&csiss_out>;
+			};
+		};
+		demosaic_port1: port@1 {
+			/* For cfa-pattern=rggb user needs to fill as per BAYER format */
+			reg = <1>;
+			xlnx,cfa-pattern = "rggb";
+			xlnx,video-width = <8>;
+			demosaic_out: endpoint {
+				remote-endpoint = <&gamma_in>;
+			};
+		};
+	};
+};
+
+&mipi_csi2_rx_v_frmbuf_wr_0 {
+	interrupt-names = "interrupt";
+	interrupt-parent = <&gic>;
+	interrupts = <0 106 4>;
+	reset-gpios = <&gpio 80 1>;
+	xlnx,dma-align = <32>;
+};
+
+&mipi_csi2_rx_v_gamma_lut_0 {
+	reset-gpios = <&gpio 86 1>;
+	gamma_ports: ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		gamma_port0: port@0 {
+			reg = <0>;
+			xlnx,video-width = <8>;
+			gamma_in: endpoint {
+				remote-endpoint = <&demosaic_out>;
+			};
+		};
+		gamma_port1: port@1 {
+			reg = <1>;
+			xlnx,video-width = <8>;
+			gamma_out: endpoint {
+				remote-endpoint = <&csc_in>;
+			};
+		};
+	};
+};
+
+&mipi_csi2_rx_v_proc_ss_csc {
+	compatible = "xlnx,v-vpss-csc";
+	reset-gpios = <&gpio 84 1>;
+	csc_ports: ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		csc_port0: port@0 {
+			/* For xlnx,video-format user needs to fill as per their requirement */
+			reg = <0>;
+			xlnx,video-format = <3>;
+			xlnx,video-width = <8>;
+			csc_in: endpoint {
+				remote-endpoint = <&gamma_out>;
+			};
+		};
+		csc_port1: port@1 {
+			/* For xlnx,video-format user needs to fill as per their requirement */
+			reg = <1>;
+			xlnx,video-format = <3>;
+			xlnx,video-width = <8>;
+			csc_out: endpoint {
+				remote-endpoint = <&scaler_in>;
+			};
+		};
+	};
+};
+
+&mipi_csi2_rx_v_proc_ss_scaler {
+// &mipi_csi2_rx_v_proc_ss_0 {
+	compatible = "xlnx,v-vpss-scaler-2.2";
+	reset-gpios = <&gpio 82 1>;
+	scaler_ports: ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		scaler_port0: port@0 {
+			/* For xlnx,video-format user needs to fill as per their requirement */
+			reg = <0>;
+			xlnx,video-format = <3>;
+			xlnx,video-width = <8>;
+			scaler_in: endpoint {
+				remote-endpoint = <&csc_out>;
+			};
+		};
+		scaler_port1: port@1 {
+			/* For xlnx,video-format user needs to fill as per their requirement */
+			reg = <1>;
+			xlnx,video-format = <3>;
+			xlnx,video-width = <8>;
+			scaler_out: endpoint {
+				remote-endpoint = <&vcap_csi_in>;
+			};
+		};
+	};
+};
+
+&amba_pl {
+    vid_stream_clk: vid_stream_clk {
+            compatible = "fixed-clock";
+            #clock-cells = <0>;
+            clock-frequency = <300000000>;
+    };
+
+    vid_s_axi_clk: vid_s_axi_clk {
+            compatible = "fixed-clock";
+            #clock-cells = <0>;
+            clock-frequency = <99990000>;
+    };
+
+	vcap_csi {
+		compatible = "xlnx,video";
+		dma-names = "port0";
+		dmas = <&mipi_csi2_rx_v_frmbuf_wr_0 0>;
+		vcap_ports: ports {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			vcap_port: port@0 {
+				direction = "input";
+				reg = <0>;
+				vcap_csi_in: endpoint {
+					remote-endpoint = <&scaler_out>;
+				};
+			};
+		};
+	};
+};
+
