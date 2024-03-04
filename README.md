@@ -36,11 +36,11 @@ We provide a step-by-step guide to recreate ProvCam's hardware and software prot
 
 ## System Requirements
 
-# Hardware
+### Hardware
 We use [Xilinx Zynq UltraScale+ MPSoC ZCU106 Evaluation Kit](https://www.xilinx.com/products/boards-and-kits/zcu106.html) and [LI-IMX274MIPI-FMC Camera](https://leopardimaging.com/product/platform-partners/amd/li-imx274mipi-fmc/) in our ProvCam's prototype.
 You also need a compatiable SD card (We use a 32 GB SD card), and a USB drive (optional) to copy the captured video without turning the board off. 
 
-# Xilinx Vivado and Vitis
+### Xilinx Vivado and Vitis
 We use Xilinx Vivado 2023.2.1 and Xilinx Vitis 2023.2.1 (https://www.xilinx.com/support/download.html) for designing both hardware and firmware.
 Please follow this [official guide](https://www.xilinx.com/support/download.html) provided by Xilinx to install both Vivado and Vitis. 
 (You may skip (part or all) Xilix Design Suite installation if you only want to try ProvCam's hardware prototype, as we provide both pre-compiled hardware and firmware)
@@ -50,7 +50,7 @@ The total machine time is about 3 hours, and it might take around 5-8 hours of m
 
 We will call this MACHINE_0 from now on, which runs both Vivado and Vitis.
 
-# Xilinx Petalinux
+### Xilinx Petalinux
 We use a [custom version of Xilinx Petalinux 2020.1](https://github.com/trusslab/provcam_linux) to reprsents the OS. 
 To compile it, the Xilinx's official Petalinux 2020.1 toolset (https://www.xilinx.com/support/download/index.html/content/xilinx/en/downloadNav/embedded-design-tools/archive.html) has to be first installed. 
 Please follow this [official guide](https://docs.xilinx.com/v/u/2020.1-English/ug1144-petalinux-tools-reference-guide) provided by Xilinx to install the Petalinux toolset. 
@@ -62,17 +62,33 @@ The total machine time is about 3 hours, and it mgiht take around 3-6 hours of m
 We will call this MACHINE_1 from now on, which is for compiling Petalinux. 
 Note that this MACHINE_1 may potentially be the same physical machine as of MACHINE_0, but we recommend the use of two different physical machines for preventing any library conflictions.
 
-# Misc.
+### Misc.
 You might need a Windows machine to adjust some board's settings (as it appears that the corresponding Xilinx tool is only available in Windows).
 
 ## Hadware Design
 
-# Preparing the hardware
+### Hardware Preparation
 1. Connect both JTAG and UART of the board to MACHINE_0.
 2. Set the board's SW6 switches to the same configuration as shown in the figure below, which is for telling the board to boot from SD card.
 ![ZCU106 SW6 Switches](docs/img/sw6_switches.png)
 3. Connect the LI-IMX274MIPI-FMC image sensor to the FMC0 connector and set the FMC0's VADJ to 1.2V (please follow [the official guide](https://support.xilinx.com/s/article/67308?language=en_US) to adjust the voltage).
-4. 
+
+### Vivado Design
+1. Clone the hardware repo (`git clone https://github.com/trusslab/provcam_hw`) to `<PATH_TO_PROVCAM_HW>`. 
+2. Open Vivado and create a new hardware project in `<PATH_TO_PROVCAM_VIVADO_HW_DESIGN>`.
+![Create Vivado Hardware Project](docs/img/create_vivado_hw_project.png)
+3. Make sure that the hardware project is created for the ZCU106 evaluation board. 
+![Create Vivado Hardware Project with Corresponding Board](docs/img/create_vivado_hw_project_final.png)
+4. Add all constraints from `<PATH_TO_PROVCAM_HW>/constraints/` to the project: File -> Add Sources -> Add or create constraints (Remember to select copy to the project directory).
+![Add Design Constraints](docs/img/add_constraints.png)
+5. Add all sources from `<PATH_TO_PROVCAM_HW>/sources/` to the project: File -> Add Sources -> Add or create design sources (Remember to select copy to the project directory).
+![Add Design Sources](docs/img/add_design_sources.png)
+6. In the TCL console, type `source <PATH_TO_PROVCAM_HW>/bd.tcl` and enter. This will create the entire ProvCam hardware design automatically.
+7. After sourcing, in the TCL console, type `regenerate_bd_layout` and enter. You will see a block design similar to the figure below. For a more detailed block deisgn illustration, please refer to this PDF.
+![Hardware Block Design](docs/pdf/bd.pdf)
+
+
+
 
 ## Firmware
 
