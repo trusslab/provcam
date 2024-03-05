@@ -84,8 +84,8 @@ You might need a Windows machine to adjust some board's settings (as it appears 
 5. Add all sources from `<PATH_TO_PROVCAM_HW>/sources/` to the project: File -> Add Sources -> Add or create design sources (Remember to select copy to the project directory).
 ![Add Design Sources](docs/img/add_design_sources.png)
 6. In the TCL console, type `source <PATH_TO_PROVCAM_HW>/bd.tcl` and enter. This will create the entire ProvCam hardware design automatically.
-7. After sourcing, in the TCL console, type `regenerate_bd_layout` and enter. You will see a block design similar to the figure below. For a more detailed block deisgn illustration, please refer to this PDF.
-![Hardware Block Design](docs/pdf/bd.pdf)
+7. After sourcing, in the TCL console, type `regenerate_bd_layout` and enter. You will see a block design similar to the figure below. For a more detailed block deisgn illustration, please refer to [this PDF](docs/pdf/bd.pdf).
+[Hardware Block Design](docs/pdf/bd.pdf)
 
 
 
