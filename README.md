@@ -18,7 +18,13 @@ Notice that the OS represents the main camera OS, which is untrusted in ProvCam.
 :computer: [ProvCam Software Repository](https://github.com/trusslab/provcam_libs/tree/main)
 This repo hosts some software and libraries running in the OS.
 
-Authors: Yuxin (Myles) Liu, Zhihao Yao, Mingyi Chen, Ardalan Amiri Sani, Sharad Agarwal, Gene Tsudik
+Authors: 
+[Yuxin (Myles) Liu](https://lab.donkeyandperi.net/~yuxinliu/) (UC Irvine), 
+[Zhihao Yao](https://web.njit.edu/~zy8/) (NJIT), 
+[Mingyi Chen](https://imcmy.me/) (UC Irvine), 
+[Ardalan Amiri Sani](https://ics.uci.edu/~ardalan/) (UC Irvine), 
+[Sharad Agarwal](https://sharadagarwal.net/) (Microsoft), 
+[Gene Tsudik](https://ics.uci.edu/~gts/) (UC Irvine)
 
 The work of UCI authors was supported in part by the NSF Awards #1763172, #1953932, #1956393, and #2247880 as well as NSA Awards #H98230-20-1-0345 and #H98230-22-1-0308.
 
@@ -109,7 +115,7 @@ You might need a Windows machine to adjust some board's settings (as it appears 
 Assuming you have the hardware design XSA file named PROVCAM_XSA. 
 
 1. Clone the firmware repo (`git clone https://github.com/trusslab/provcam_ctrl.git`) to `<PATH_TO_PROVCAM_FW_SRC>`.
-2. Open Vitis classic (`vitis -classic`). 
+2. Open Vitis classic (`vitis -classic`) under a new workspace `<PATH_TO_PROVCAM_FW_WS>`. 
 3. Create a new 
 
 ## OS
