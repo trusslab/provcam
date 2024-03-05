@@ -82,16 +82,16 @@ You might need a Windows machine to adjust some board's settings (as it appears 
 3. Connect the LI-IMX274MIPI-FMC image sensor to the FMC0 connector and set the FMC0's VADJ to 1.2V (please follow [the official guide](https://support.xilinx.com/s/article/67308?language=en_US) to adjust the voltage).
 
 ### Vivado Design
-1. Clone the hardware repo (`git clone https://github.com/trusslab/provcam_hw`) to `<PATH_TO_PROVCAM_HW>`. 
+1. Clone the hardware repo (`git clone https://github.com/trusslab/provcam_hw`) to `<PATH_TO_PROVCAM_HW_SRC>`. 
 2. Open Vivado and create a new hardware project in `<PATH_TO_PROVCAM_VIVADO_HW_DESIGN>`.
 ![Create Vivado Hardware Project](docs/img/create_vivado_hw_project.png)
 3. Make sure that the hardware project is created for the ZCU106 evaluation board. 
 ![Create Vivado Hardware Project with Corresponding Board](docs/img/create_vivado_hw_project_final.png)
-4. Add all constraints from `<PATH_TO_PROVCAM_HW>/constraints/` to the project: File -> Add Sources -> Add or create constraints (Remember to select copy to the project directory).
+4. Add all constraints from `<PATH_TO_PROVCAM_HW_SRC>/constraints/` to the project: File -> Add Sources -> Add or create constraints (Remember to select copy to the project directory).
 ![Add Design Constraints](docs/img/add_constraints.png)
-5. Add all sources from `<PATH_TO_PROVCAM_HW>/sources/` to the project: File -> Add Sources -> Add or create design sources (Remember to select copy to the project directory).
+5. Add all sources from `<PATH_TO_PROVCAM_HW_SRC>/sources/` to the project: File -> Add Sources -> Add or create design sources (Remember to select copy to the project directory).
 ![Add Design Sources](docs/img/add_design_sources.png)
-6. In the TCL console, type `source <PATH_TO_PROVCAM_HW>/bd.tcl` and enter. This will create the entire ProvCam hardware design automatically.
+6. In the TCL console, type `source <PATH_TO_PROVCAM_HW_SRC>/bd.tcl` and enter. This will create the entire ProvCam hardware design automatically.
 7. After sourcing, in the TCL console, type `regenerate_bd_layout` and enter. You will see a block design similar to the figure below. For a more detailed block deisgn illustration, please refer to [this PDF](docs/pdf/bd.pdf). 
 ![Block Design Preview](docs/img/block_design_preview.png)
 8. Under the Sources Tab (wiht Hierarchy view), select and right click bd (bd.bd).
@@ -110,15 +110,51 @@ You might need a Windows machine to adjust some board's settings (as it appears 
 ![Set BD Wrapper as Top](docs/img/bd_wrapper_set_as_top.png)
 15. Generate bitstream. This step might take a few hours depending on your machine. 
 ![Generate Bitstream](docs/img/click_generate_bitstream.png)
+16. Once done, export the hardware to `<PATH_TO_PROVCAM_XSA>`: File -> Export -> Export Hardware. Please remember to select "include bitstream".
+![Export Hardware Including Bitstream](docs/img/export_hardware_include_bitstream.png)
 
 ## Firmware
-Assuming you have the hardware design XSA file named PROVCAM_XSA. 
+Assuming you have the hardware design XSA file named `PROVCAM_XSA`. 
 
 1. Clone the firmware repo (`git clone https://github.com/trusslab/provcam_ctrl.git`) to `<PATH_TO_PROVCAM_FW_SRC>`.
 2. Open Vitis classic (`vitis -classic`) under a new workspace `<PATH_TO_PROVCAM_FW_WS>`. 
-3. Create a new 
+3. Create a new platform project with `PROVCAM_XSA` using the confiration shown in the following figure.
+![Create Platform Project](docs/img/vitis_create_platform_project.png)
+4. Create a new application project named `PROVCAM_FW_APP` with the previously created platform project and its domain. Please remember to select "Hello World" as the development template.
+5. Copy (and overwrite) everything inside `<PATH_TO_PROVCAM_FW_SRC>` to the newly created application project's src folder (`<PATH_TO_PROVCAM_FW_WS>/PROVCAM_FW_APP/src/`). 
+6. Build the application project: In Vitis's Explorer tab, right click the application project -> Build Project.
+![Build Vitis Project](docs/img/build_vitis_project.png)
+7. Once the build is done, you will find the firmware binary in `<PATH_TO_PROVCAM_FW_WS>/PROVCAM_FW_APP/Debug/PROVCAM_FW_APP.elf`.
 
 ## OS
+Assuming you have the hardware design XSA file `PROVCAM_XSA` under `<PATH_TO_PROVCAM_XSA>`. Please note the difference between these two terms, as one represents the file itself, and the one represents the directory containing the file.
+Assuming you have the firmware binary `PROVCAM_FW_APP_ELF`.
+Assuming you have the official Petalinux toolset installed at `<PATH_TO_PETALINUX_INSTALLATION>`.
+
+1. Download the Xilinx VCU TRD 2020.1 from [this link](https://xilinx-wiki.atlassian.net/wiki/spaces/A/pages/460948332/Zynq+UltraScale+MPSoC+VCU+TRD+2020.1#4.1-Download-the-TRD) and extract it to `<PATH_TO_TRD_SRC>`. (Note that you may need a Xilinx account to access the download link)
+2. Clone the OS repo (`git clone https://github.com/trusslab/provcam_linux.git`) to `<PATH_TO_PROVCAM_OS_SRC>`. 
+3. Clone the libraries repo (`git clone git@github.com:trusslab/provcam_libs.git`) to `<PATH_TO_PROVCAM_LIBS_SRC>`. 
+4. Clone the misc repo (`git clone https://github.com/trusslab/provcam.git`) to `<PATH_TO_PROVCAM_MISC_SRC>`. 
+5. Open a terminal and source the Petalinux toolset: `source <PATH_TO_PETALINUX_INSTALLATION>/settings.sh`. 
+6. Navigate to the board support package (BSP) directory: `cd <PATH_TO_TRD_SRC>/apu/vcu_petalinux_bsp/`.
+7. Create a new Petalinux project: `petalinux-create -t project -s xilinx-vcu-zcu106-v2020.1-final.bsp`, and navigate to the newly created Petalinux project: `cd xilinx-vcu-zcu106-v2020.1-final`. (Assume the path of the Petalinux project from now on is `<PATH_TO_PROVCAM_PETALINUX_PROJECT>`).
+8. Copy `<PATH_TO_PROVCAM_MISC_SRC>/project-spec/` to the Petalinux project's directory: `cp -r <PATH_TO_PROVCAM_MISC_SRC>/project-spec/ <PATH_TO_PROVCAM_PETALINUX_PROJECT>/`.
+10. Modify first line of `<PATH_TO_PROVCAM_LIBS_SRC>/generate_and_install_patches.sh` to point to the Petalinux project's directory `<PATH_TO_PROVCAM_PETALINUX_PROJECT>`.
+11. Execute `<PATH_TO_PROVCAM_LIBS_SRC>/generate_and_install_patches.sh` to generate and install patches for the Petalinux project.
+12. Navigate to the Petalinux project's directory: `cd <PATH_TO_PROVCAM_PETALINUX_PROJECT>` and execute `petalinux-config --get-hw-description=<PATH_TO_PROVCAM_XSA>` to configure the project.
+13. In the pop-up window, select "Linux Components Selection" -> "linux-kernel" and change to "ext-local-src". Then under the same "Linux Components Selection" menu, select "External linux-kernel local source settings" -> "External linux-kernel local source path" and enter `<PATH_TO_PROVCAM_OS_SRC>`. Exit the configuration menu and save the configuration after that.
+14. Build the Petalinux project: `petalinux-build`. This step might take a few hours depending on your machine.
+15. After the build is done, navigate to `cd <PATH_TO_PROVCAM_XSA>` and execute `unzip PROVCAM_XSA`. (XSA file is essentially just an archive of the hardware design)
+16. Navigate back to the Petalinux project `cd <PATH_TO_PROVCAM_PETALINUX_PROJECT>`, and copy `PROVCAM_FW_APP_ELF` to the Petalinux project's directory: `cp PROVCAM_FW_APP_ELF <PATH_TO_PROVCAM_PETALINUX_PROJECT>/`.
+17. Copy `<PATH_TO_PROVCAM_MISC_SRC>/merge_microblaze_elf.sh` to the Petalinux project's directory: `cp -r <PATH_TO_PROVCAM_MISC_SRC>/merge_microblaze_elf.sh <PATH_TO_PROVCAM_PETALINUX_PROJECT>/`.
+18. Modify the first four lines to their corresponding values:\
+- `VITIS_INSTALLATION` should point to the installation folder of Vitis.\
+- `PROJECT_DIR` should point to the Petalinux project's directory (`<PATH_TO_PROVCAM_PETALINUX_PROJECT>`).\
+- `XSA_DIR` should point to the directory containing the unzipped XSA file (`<PATH_TO_PROVCAM_XSA>`).\
+- `XSA_NAME` should be the name of the XSA file (`PROVCAM_XSA`) without its extension `.xsa`.
+19. Execute `<PATH_TO_PROVCAM_PETALINUX_PROJECT>/merge_microblaze_elf.sh` to merge the firmware binary into the Petalinux project. 
+20. Navigate to the comiled images of the Petalinux project: `cd <PATH_TO_PROVCAM_PETALINUX_PROJECT>/images/linux/`.
+21. Create the boot image: `petalinux-package --boot --fsbl zynqmp_fsbl.elf --u-boot u-boot.elf --pmufw pmufw.elf --fpga system.bit --force`.
 
 ## Debug & Run
 
