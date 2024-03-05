@@ -18,12 +18,12 @@ Notice that the OS represents the main camera OS, which is untrusted in ProvCam.
 :computer: [ProvCam Software Repository](https://github.com/trusslab/provcam_libs/tree/main)
 This repo hosts some software and libraries running in the OS.
 
-Authors: 
-[Yuxin (Myles) Liu](https://lab.donkeyandperi.net/~yuxinliu/) (UC Irvine), 
-[Zhihao Yao](https://web.njit.edu/~zy8/) (NJIT), 
-[Mingyi Chen](https://imcmy.me/) (UC Irvine), 
-[Ardalan Amiri Sani](https://ics.uci.edu/~ardalan/) (UC Irvine), 
-[Sharad Agarwal](https://sharadagarwal.net/) (Microsoft), 
+Authors: \
+[Yuxin (Myles) Liu](https://lab.donkeyandperi.net/~yuxinliu/) (UC Irvine)\
+[Zhihao Yao](https://web.njit.edu/~zy8/) (NJIT)\
+[Mingyi Chen](https://imcmy.me/) (UC Irvine)\
+[Ardalan Amiri Sani](https://ics.uci.edu/~ardalan/) (UC Irvine)\
+[Sharad Agarwal](https://sharadagarwal.net/) (Microsoft)\
 [Gene Tsudik](https://ics.uci.edu/~gts/) (UC Irvine)
 
 The work of UCI authors was supported in part by the NSF Awards #1763172, #1953932, #1956393, and #2247880 as well as NSA Awards #H98230-20-1-0345 and #H98230-22-1-0308.
