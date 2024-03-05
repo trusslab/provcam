@@ -32,7 +32,9 @@ We provide a step-by-step guide to recreate ProvCam's hardware and software prot
     - [Table of Contents](#table-of-contents)
     - [System Requirements](#system-requirements)
     - [Hardware Design](#hadware-design)
-    - 
+    - [Firmware](#firmware)
+    - [OS](#os)
+    - [Debug & Run](#debug--run)
 
 ## System Requirements
 
@@ -84,13 +86,31 @@ You might need a Windows machine to adjust some board's settings (as it appears 
 5. Add all sources from `<PATH_TO_PROVCAM_HW>/sources/` to the project: File -> Add Sources -> Add or create design sources (Remember to select copy to the project directory).
 ![Add Design Sources](docs/img/add_design_sources.png)
 6. In the TCL console, type `source <PATH_TO_PROVCAM_HW>/bd.tcl` and enter. This will create the entire ProvCam hardware design automatically.
-7. After sourcing, in the TCL console, type `regenerate_bd_layout` and enter. You will see a block design similar to the figure below. For a more detailed block deisgn illustration, please refer to [this PDF](docs/pdf/bd.pdf).
-[Hardware Block Design](docs/pdf/bd.pdf)
-
-
-
+7. After sourcing, in the TCL console, type `regenerate_bd_layout` and enter. You will see a block design similar to the figure below. For a more detailed block deisgn illustration, please refer to [this PDF](docs/pdf/bd.pdf). 
+![Block Design Preview](docs/img/block_design_preview.png)
+8. Under the Sources Tab (wiht Hierarchy view), select and right click bd (bd.bd).
+![Find BD under Sources Tab](docs/img/source_find_bd.png)
+9. Click "Generate Output Products".
+![Click Generate Output Products](docs/img/source_bd_generate_output.png)
+10. Generate the output products with the following options (note that you may choose the number of jobs/threads based on your machine's spec).
+![Generate Output Products Options](docs/img/source_bd_generate_output_options.png)
+11. Repeat step 8, and click "Create HDL Wrapper".
+![Click Create HDL Wrapper](docs/img/source_bd_create_hdl_wrapper.png)
+12. Check "Let Vivado manage wrapper and auto-update" and click OK.
+![Create HDL Wrapper with Options](docs/img/create_hdl_wrapper_options.png)
+13. Under the Sources Tab (wiht Hierarchy view), select and right click the newly generated bd_wrapper (bd_wrapper.v).
+![Select Wrapper under Sources](docs/img/sources_bd_wrapper_select.png)
+14. Click "Set as Top".
+![Set BD Wrapper as Top](docs/img/bd_wrapper_set_as_top.png)
+15. Generate bitstream. This step might take a few hours depending on your machine. 
+![Generate Bitstream](docs/img/click_generate_bitstream.png)
 
 ## Firmware
+Assuming you have the hardware design XSA file named PROVCAM_XSA. 
+
+1. Clone the firmware repo (`git clone https://github.com/trusslab/provcam_ctrl.git`) to `<PATH_TO_PROVCAM_FW_SRC>`.
+2. Open Vitis classic (`vitis -classic`). 
+3. Create a new 
 
 ## OS
 
