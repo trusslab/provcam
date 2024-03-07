@@ -40,7 +40,7 @@ We provide a step-by-step guide to recreate ProvCam's hardware and software prot
     - [Hardware Design](#hadware-design)
     - [Firmware](#firmware)
     - [OS](#os)
-    - [Debug & Run](#debug--run)
+    - [Run & Debug](#run--debug)
 
 ## System Requirements
 
@@ -74,14 +74,8 @@ Note that this MACHINE_1 may potentially be the same physical machine as of MACH
 You might need a Windows machine to adjust some board's settings (as it appears that the corresponding Xilinx tool is only available in Windows).
 
 ## Hadware Design
+This section is supposed to be done using MACHINE_0.
 
-### Hardware Preparation
-1. Connect both JTAG and UART of the board to MACHINE_0.
-2. Set the board's SW6 switches to the same configuration as shown in the figure below, which is for telling the board to boot from SD card.
-![ZCU106 SW6 Switches](docs/img/sw6_switches.png)
-3. Connect the LI-IMX274MIPI-FMC image sensor to the FMC0 connector and set the FMC0's VADJ to 1.2V (please follow [the official guide](https://support.xilinx.com/s/article/67308?language=en_US) to adjust the voltage).
-
-### Vivado Design
 1. Clone the hardware repo (`git clone https://github.com/trusslab/provcam_hw`) to `<PATH_TO_PROVCAM_HW_SRC>`. 
 2. Open Vivado and create a new hardware project in `<PATH_TO_PROVCAM_VIVADO_HW_DESIGN>`.
 ![Create Vivado Hardware Project](docs/img/create_vivado_hw_project.png)
@@ -114,7 +108,8 @@ You might need a Windows machine to adjust some board's settings (as it appears 
 ![Export Hardware Including Bitstream](docs/img/export_hardware_include_bitstream.png)
 
 ## Firmware
-Assuming you have the hardware design XSA file named `PROVCAM_XSA`. 
+Assuming you have the hardware design XSA file named `PROVCAM_XSA`.\
+This section is supposed to be done using MACHINE_0.
 
 1. Clone the firmware repo (`git clone https://github.com/trusslab/provcam_ctrl.git`) to `<PATH_TO_PROVCAM_FW_SRC>`.
 2. Open Vitis classic (`vitis -classic`) under a new workspace `<PATH_TO_PROVCAM_FW_WS>`. 
@@ -127,9 +122,10 @@ Assuming you have the hardware design XSA file named `PROVCAM_XSA`.
 7. Once the build is done, you will find the firmware binary in `<PATH_TO_PROVCAM_FW_WS>/PROVCAM_FW_APP/Debug/PROVCAM_FW_APP.elf`.
 
 ## OS
-Assuming you have the hardware design XSA file `PROVCAM_XSA` under `<PATH_TO_PROVCAM_XSA>`. Please note the difference between these two terms, as one represents the file itself, and the one represents the directory containing the file.
-Assuming you have the firmware binary `PROVCAM_FW_APP_ELF`.
-Assuming you have the official Petalinux toolset installed at `<PATH_TO_PETALINUX_INSTALLATION>`.
+Assuming you have the hardware design XSA file `PROVCAM_XSA` under `<PATH_TO_PROVCAM_XSA>`. Please note the difference between these two terms, as one represents the file itself, and the one represents the directory containing the file.\
+Assuming you have the firmware binary `PROVCAM_FW_APP_ELF`.\
+Assuming you have the official Petalinux toolset installed at `<PATH_TO_PETALINUX_INSTALLATION>`.\
+This section is supposed to be done using MACHINE_1.
 
 1. Download the Xilinx VCU TRD 2020.1 from [this link](https://xilinx-wiki.atlassian.net/wiki/spaces/A/pages/460948332/Zynq+UltraScale+MPSoC+VCU+TRD+2020.1#4.1-Download-the-TRD) and extract it to `<PATH_TO_TRD_SRC>`. (Note that you may need a Xilinx account to access the download link)
 2. Clone the OS repo (`git clone https://github.com/trusslab/provcam_linux.git`) to `<PATH_TO_PROVCAM_OS_SRC>`. 
@@ -153,10 +149,74 @@ Assuming you have the official Petalinux toolset installed at `<PATH_TO_PETALINU
 - `XSA_DIR` should point to the directory containing the unzipped XSA file (`<PATH_TO_PROVCAM_XSA>`).\
 - `XSA_NAME` should be the name of the XSA file (`PROVCAM_XSA`) without its extension `.xsa`.
 19. Execute `<PATH_TO_PROVCAM_PETALINUX_PROJECT>/merge_microblaze_elf.sh` to merge the firmware binary into the Petalinux project. 
-20. Navigate to the comiled images of the Petalinux project: `cd <PATH_TO_PROVCAM_PETALINUX_PROJECT>/images/linux/`.
+20. Navigate to the comiled images of the Petalinux project: `cd <PATH_TO_PROVCAM_PETALINUX_PROJECT>/images/linux/`. (We assume this folder is `<PATH_TO_PROVCAM_PETALINUX_IMAGES>` from now on)
 21. Create the boot image: `petalinux-package --boot --fsbl zynqmp_fsbl.elf --u-boot u-boot.elf --pmufw pmufw.elf --fpga system.bit --force`.
 
-## Debug & Run
+## Run & Debug
+
+### Preparing the SD Card
+Assuming the directory containing the compiled images of the Petalinux project is `<PATH_TO_PROVCAM_PETALINUX_IMAGES>`.\
+This sub-section is supposed to be done using MACHINE_1.
+
+1. Insert the SD card and mount it to `<PATH_TO_PROVCAM_SDCARD>`. (Note that the SD card should be formatted to FAT32)
+2. Navigate to `cd <PATH_TO_PROVCAM_PETALINUX_IMAGES>` and copy `BOOT.BIN`, `image.ub` and `boot.scr` to the SD card: `cp BOOT.BIN image.ub boot.scr <PATH_TO_PROVCAM_SDCARD>/`.
+3. Unmount the SD card and insert it into the ZCU106 board.
+
+### Hardware Preparation
+This sub-section is supposed to be done using MACHINE_0.
+
+1. Connect both JTAG and UART of the board to MACHINE_0.
+2. Set the board's SW6 switches to the same configuration as shown in the figure below, which is for telling the board to boot from SD card.
+![ZCU106 SW6 Switches](docs/img/sw6_switches.png)
+3. Connect the LI-IMX274MIPI-FMC image sensor to the FMC0 connector and set the FMC0's VADJ to 1.2V (please follow [the official guide](https://support.xilinx.com/s/article/67308?language=en_US) to adjust the voltage).
+
+### Preparing the UART Consoles
+Assuming you have the ZCU106 evaluation board's UART connected to MACHINE_0.\
+This sub-section is supposed to be done using MACHINE_0.
+
+1. Open a terminal and execute `ll -h /dev/serial/by-id/` and you are supposed to see something similar to below. 
+![Find UART Ports](docs/img/find_uart_ports.png)
+2. The first UART port (`ttyUSB9` in the figure above) is used by the ProvCam OS, where the third UART port (`ttyUSB11` in the figure above) is used by the ProvCam firmware. 
+3. Open the OS UART port using minicom: `sudo minicom -D /dev/ttyUSB9`. Make sure your minicom is configured as shown in the figure below (you can enter configuration of minicom by pressing CTRL+A and O -> "Serial port setup"). From now on we will call this terminal CONSOLE_OS.
+![Minicom Configuration for OS](docs/img/minicom_os_config.png)
+4. Open another terminal and open the firmware UART port using minicom: `sudo minicom -D /dev/ttyUSB11`. Make sure your minicom is configured as shown in the figure below (you can enter configuration of minicom by pressing CTRL+A and O -> "Serial port setup"). From now on we will call this terminal CONSOLE_FW.
+![Minicom Configuration for Firmware](docs/img/minicom_fw_config.png)
+
+### Preparing the Vitis Debug Environment
+Assuming you have the ZCU106 evaluation board's JTAG connected to MACHINE_0.\
+Assuming you have the hardware design XSA file named `PROVCAM_XSA`.\
+Assuming you have both CONSOLE_OS and CONSOLE_FW opened.\
+This sub-section is supposed to be done using MACHINE_0.
+
+1. Open Vitis classic (`vitis -classic`) under a new workspace `<PATH_TO_PROVCAM_DEBUG>`. (Note that this could be the same workspace as `<PATH_TO_PROVCAM_FW_WS>`, as we are only using this to trigger Vitis's debug mode)
+2. You have two options in this step:\
+If you choose to follow this manual step by step, please use the following option A:\
+A. Create a new application project named `PROVCAM_DEBUG_APP` with the platform project created in [the firmware section](#firmware) and its domain. Please remember to select "Hello World" as the development template.\
+If you choose to use the precompiled images, please use the following option B:\
+B. Create a new application project named `PROVCAM_DEBUG_APP` with a new platform from hardware `PROVCAM_XSA`. Please remember to select "Hello World" as the development template.\
+![Create Application Project with New Platform Project](docs/img/vitis_create_new_application_project_with_new_platform.png)
+3. Build the application project: In Vitis's Explorer tab, right click the application project -> Build Project. (See the figure in step 6 of [the firmware section](#firmware))
+4. Once the build is done, turn on the ZCU106 evaluation board. 
+5. Once the board is on, click "Debug" button and select "Debug Configurations".
+![Open Debug Configurations](docs/img/vitis_debug_option.png)
+6. In the pop-up windows, right-click "Single Application Debug" and select "New Configuration".
+![Create New Debug Configuration](docs/img/vitis_create_new_application_debug.png)
+7. Configure the debug options as shown in the figure below and click "Debug".
+![Configure Debug Options](docs/img/vitis_start_application_debug_with_config.png)
+8. Once the board is programmed and the debug is started, you Vitis should be in debug mode similar to the figure below.
+![Vitis Debug Mode Preview](docs/img/vitis_debug_mode_preview.png)
+9. Turn off the board without closing Vitis. (Here we're essentially just activating Vitis's debug mode, and we will not use Vitis to program the board again)
+
+### Running & Debugging ProvCam
+Assuming you have the SD card containing the compiled images of everything of ProvCam inserted into the ZCU106 evaluation board.\
+Assuming you have both CONSOLE_OS and CONSOLE_FW opened.\
+Assuming you have Vitis opened in debug mode.\
+This sub-section is supposed to be done using MACHINE_0.
+
+1. Turn on the ZCU106 evaluation board. 
+2. Wait for the OS to boot up and you should see the OS's booting log in CONSOLE_OS and the firmware's booting log in CONSOLE_FW.
+3. Once the OS is booted, you should see the OS's login prompt in CONSOLE_OS.
+4. Login to the OS using the default username and password (both are "root").
 
 ## References
 
