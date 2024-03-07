@@ -28,7 +28,7 @@ Authors: \
 
 The work of UCI authors was supported in part by the NSF Awards #1763172, #1953932, #1956393, and #2247880 as well as NSA Awards #H98230-20-1-0345 and #H98230-22-1-0308.
 
-We provide a step-by-step guide to recreate ProvCam's hardware and software prototype mentioned in our paper. 
+We provide design/implmentation documentation and a step-by-step guide to recreate ProvCam's hardware and software prototype mentioned in our paper. 
 
 ---
 
@@ -36,28 +36,32 @@ We provide a step-by-step guide to recreate ProvCam's hardware and software prot
 
 - [ProvCam](#provcam-a-camera-module-with-self-contained-tcb-for-producing-verifiable-videos)
     - [Table of Contents](#table-of-contents)
-    - [System Requirements](#system-requirements)
-        - [Hardware](#hardware)
-        - [Xilinx Vivado and Vitis](#xilinx-vivado-and-vitis)
-        - [Xilinx Petalinux](#xilinx-petalinux)
-        - [Misc.](#misc)
-    - [Hardware Design](#hadware-design)
-    - [Firmware](#firmware)
-    - [OS](#os)
+    - [Build](#build)
+        - [System Requirements](#system-requirements)
+            - [Hardware](#hardware)
+            - [Xilinx Vivado and Vitis](#xilinx-vivado-and-vitis)
+            - [Xilinx Petalinux](#xilinx-petalinux)
+            - [Misc.](#misc)
+        - [Hadware Design](#hadware-design)
+        - [Firmware](#firmware)
+        - [OS](#os)
     - [Run](#run)
         - [Preparing the SD Card](#preparing-the-sd-card)
         - [Hardware Preparation](#hardware-preparation)
         - [Preparing the UART Consoles](#preparing-the-uart-consoles)
         - [Preparing the Vitis Debug Environment](#preparing-the-vitis-debug-environment)
         - [Running ProvCam](#running-provcam)
+    - [References](#references)
 
-## System Requirements
+## Build
 
-### Hardware
+### System Requirements
+
+#### Hardware
 We use [Xilinx Zynq UltraScale+ MPSoC ZCU106 Evaluation Kit](https://www.xilinx.com/products/boards-and-kits/zcu106.html) and [LI-IMX274MIPI-FMC Camera](https://leopardimaging.com/product/platform-partners/amd/li-imx274mipi-fmc/) in our ProvCam's prototype.
 You also need a compatiable SD card (We use a 32 GB SD card), and a USB drive (optional) to copy the captured video without turning the board off. 
 
-### Xilinx Vivado and Vitis
+#### Xilinx Vivado and Vitis
 We use Xilinx Vivado 2023.2.1 and Xilinx Vitis 2023.2.1 (https://www.xilinx.com/support/download.html) for designing both hardware and firmware.
 Please follow this [official guide](https://www.xilinx.com/support/download.html) provided by Xilinx to install both Vivado and Vitis. 
 (You may skip (part or all) Xilix Design Suite installation if you only want to try ProvCam's hardware prototype, as we provide both pre-compiled hardware and firmware)
@@ -67,7 +71,7 @@ The total machine time is about 3 hours, and it might take around 5-8 hours of m
 
 We will call this MACHINE_0 from now on, which runs both Vivado and Vitis.
 
-### Xilinx Petalinux
+#### Xilinx Petalinux
 We use a [custom version of Xilinx Petalinux 2020.1](https://github.com/trusslab/provcam_linux) to reprsents the OS. 
 To compile it, the Xilinx's official Petalinux 2020.1 toolset (https://www.xilinx.com/support/download/index.html/content/xilinx/en/downloadNav/embedded-design-tools/archive.html) has to be first installed. 
 Please follow this [official guide](https://docs.xilinx.com/v/u/2020.1-English/ug1144-petalinux-tools-reference-guide) provided by Xilinx to install the Petalinux toolset. 
@@ -79,10 +83,10 @@ The total machine time is about 3 hours, and it mgiht take around 3-6 hours of m
 We will call this MACHINE_1 from now on, which is for compiling Petalinux. 
 Note that this MACHINE_1 may potentially be the same physical machine as of MACHINE_0, but we recommend the use of two different physical machines for preventing any library conflictions.
 
-### Misc.
+#### Misc.
 You might need a Windows machine to adjust some board's settings (as it appears that the corresponding Xilinx tool is only available in Windows).
 
-## Hadware Design
+### Hadware Design
 This section is supposed to be done using MACHINE_0.
 
 1. Clone the hardware repo (`git clone https://github.com/trusslab/provcam_hw`) to `<PATH_TO_PROVCAM_HW_SRC>`. 
@@ -116,7 +120,7 @@ This section is supposed to be done using MACHINE_0.
 16. Once done, export the hardware to `<PATH_TO_PROVCAM_XSA>`: File -> Export -> Export Hardware. Please remember to select "include bitstream".
 ![Export Hardware Including Bitstream](docs/img/export_hardware_include_bitstream.png)
 
-## Firmware
+### Firmware
 Assuming you have the hardware design XSA file named `PROVCAM_XSA`.\
 This section is supposed to be done using MACHINE_0.
 
@@ -130,7 +134,7 @@ This section is supposed to be done using MACHINE_0.
 ![Build Vitis Project](docs/img/build_vitis_project.png)
 7. Once the build is done, you will find the firmware binary in `<PATH_TO_PROVCAM_FW_WS>/PROVCAM_FW_APP/Debug/PROVCAM_FW_APP.elf`.
 
-## OS
+### OS
 Assuming you have the hardware design XSA file `PROVCAM_XSA` under `<PATH_TO_PROVCAM_XSA>`. Please note the difference between these two terms, as one represents the file itself, and the one represents the directory containing the file.\
 Assuming you have the firmware binary `PROVCAM_FW_APP_ELF`.\
 Assuming you have the official Petalinux toolset installed at `<PATH_TO_PETALINUX_INSTALLATION>`.\
