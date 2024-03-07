@@ -152,14 +152,20 @@ This section is supposed to be done using MACHINE_1.
 20. Navigate to the comiled images of the Petalinux project: `cd <PATH_TO_PROVCAM_PETALINUX_PROJECT>/images/linux/`. (We assume this folder is `<PATH_TO_PROVCAM_PETALINUX_IMAGES>` from now on)
 21. Create the boot image: `petalinux-package --boot --fsbl zynqmp_fsbl.elf --u-boot u-boot.elf --pmufw pmufw.elf --fpga system.bit --force`.
 
-## Run & Debug
+## Run
 
 ### Preparing the SD Card
 Assuming the directory containing the compiled images of the Petalinux project is `<PATH_TO_PROVCAM_PETALINUX_IMAGES>`.\
 This sub-section is supposed to be done using MACHINE_1.
 
 1. Insert the SD card and mount it to `<PATH_TO_PROVCAM_SDCARD>`. (Note that the SD card should be formatted to FAT32)
-2. Navigate to `cd <PATH_TO_PROVCAM_PETALINUX_IMAGES>` and copy `BOOT.BIN`, `image.ub` and `boot.scr` to the SD card: `cp BOOT.BIN image.ub boot.scr <PATH_TO_PROVCAM_SDCARD>/`.
+2. You have two options in this step:\
+If you choose to follow this manual step by step, please use the following option A:\
+A-1. Navigate to `cd <PATH_TO_PROVCAM_PETALINUX_IMAGES>` and copy `BOOT.BIN`, `image.ub` and `boot.scr` to the SD card: `cp BOOT.BIN image.ub boot.scr <PATH_TO_PROVCAM_SDCARD>/`.
+A-2. Navigate to `cd <PATH_TO_PROVCAM_MISC_SRC>/precompiled/sdcard/` and copy config files to the SD card: `cp -r config/ <PATH_TO_PROVCAM_SDCARD>/`.
+If you choose to use the precompiled images, please use the following option B:\
+B-1. If not done yet, clone the misc repo first (`git clone https://github.com/trusslab/provcam.git`) to `<PATH_TO_PROVCAM_MISC_SRC>`.
+B-2. Navigate to `cd <PATH_TO_PROVCAM_MISC_SRC>/precompiled/sdcard/` and copy everything to the SD card: `cp -r * <PATH_TO_PROVCAM_SDCARD>/`. (Note that we store one of the image files `image.ub` with Git LFS, so please make sure you have Git LFS installed and the image file is properly downloaded)
 3. Unmount the SD card and insert it into the ZCU106 board.
 
 ### Hardware Preparation
@@ -207,7 +213,7 @@ B. Create a new application project named `PROVCAM_DEBUG_APP` with a new platfor
 ![Vitis Debug Mode Preview](docs/img/vitis_debug_mode_preview.png)
 9. Turn off the board without closing Vitis. (Here we're essentially just activating Vitis's debug mode, and we will not use Vitis to program the board again)
 
-### Running & Debugging ProvCam
+### Running ProvCam
 Assuming you have the SD card containing the compiled images of everything of ProvCam inserted into the ZCU106 evaluation board.\
 Assuming you have both CONSOLE_OS and CONSOLE_FW opened.\
 Assuming you have Vitis opened in debug mode.\
@@ -216,7 +222,20 @@ This sub-section is supposed to be done using MACHINE_0.
 1. Turn on the ZCU106 evaluation board. 
 2. Wait for the OS to boot up and you should see the OS's booting log in CONSOLE_OS and the firmware's booting log in CONSOLE_FW.
 3. Once the OS is booted, you should see the OS's login prompt in CONSOLE_OS.
-4. Login to the OS using the default username and password (both are "root").
+4. Login to the OS using the default username and password (both are "root"). (You should see something similar to the two figures below on CONSOLE_OS and CONSOLE_FW)
+![OS Boot Log](docs/img/os_boot_log.png)
+![FW Boot Log](docs/img/fw_boot_log.png)
+5. In Vitis debug mode's Debug tab, select "MicroBlaze #0 (Running)".
+![Select MicroBlaze #0](docs/img/vitis_debug_select_microblaze.png)
+6. In Vitis debug mode's Memory tab, add a new monitor at address `0x240000`.
+![Add New Memory Monitor](docs/img/vitis_memory_tab_create_new_monitor.png)
+7. In the newly added memory monitor, rewrite the value of address `0x240008` to `0x00000001`. After confirming the change of the value from the memory monitor, set the value back to `0x00000000`. (This step triggers a manual reset of ProvCam's hardware; note that this is recommended but optional, and you may skip this step if you don't want to reset the hardware)
+![Rewrite Memory Value for Reset](docs/img/vitis_memory_tab_reset.png)
+8. On CONSOLE_OS, execute `vcu_gst_app /media/card/config/4-1080p60/Record/4_1080p60_AVC_15Mbps_mipi.cfg` to start the video recording. (Note that you may need to adjust the path of the configuration file based on your SD card's content; please directly modify the config file if needed)
+9. Press CTRL+C to stop the video recording on CONSOLE_OS at anytime. (You should see something similar to the two figures below on CONSOLE_OS and CONSOLE_FW)
+![OS Capture Log](docs/img/os_capture_log.png)
+![FW Capture Log](docs/img/fw_capture_log.png)
+10. Once the video recording is stopped, you can find the recorded video in the designated folder (default is `/media/card/test_direct_mipi_1.ts`). (You may also copy the video to a USB drive if you have one inserted into the board)
 
 ## References
 
