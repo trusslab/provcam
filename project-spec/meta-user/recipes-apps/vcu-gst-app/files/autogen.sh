@@ -1,3 +1,18 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:25c29843f1d30093267f9d1944c9ab0f13bfd6793ae3596262d7e6f07ffc066a
-size 414
+#!/bin/sh
+# you can either set the environment variables AUTOCONF, AUTOHEADER, AUTOMAKE,
+# ACLOCAL, AUTOPOINT and/or LIBTOOLIZE to the right versions, or leave them
+# unset and get the defaults
+
+autoreconf --verbose --force --install --make -Wno-portability || {
+ echo 'autogen.sh failed';
+ exit 1;
+}
+
+./configure || {
+ echo 'configure failed';
+ exit 1;
+}
+
+echo
+echo "Now type 'make' to compile this module."
+echo

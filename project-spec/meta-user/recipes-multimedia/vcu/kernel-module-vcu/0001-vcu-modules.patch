@@ -1,3 +1,635 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:ac2a02ca114adf17b6b8be1e1b43f35c0a87201024969a384ae091d2820f9e30
-size 24203
+diff --git a/Kconfig b/Kconfig
+index e16a6d8..0d418df 100644
+--- a/Kconfig
++++ b/Kconfig
+@@ -6,4 +6,4 @@ menuconfig ALLEGRO
+ if ALLEGRO
+ source "drivers/staging/allegro/al5e/Kconfig"
+ source "drivers/staging/allegro/al5d/Kconfig"
+-endif
++endif
+\ No newline at end of file
+diff --git a/Makefile b/Makefile
+index bf4d2c4..c6dee99 100644
+--- a/Makefile
++++ b/Makefile
+@@ -7,9 +7,13 @@ else
+ endif
+ 
+ obj-m	+= common/
++# obj-$(CONFIG_ALLEGRO_MYLES)	+= common/
+ obj-m	+= al5e/
++# obj-$(CONFIG_ALLEGRO_VCU_ENC_DRIVER_MYLES) += al5e/
+ obj-m	+= al5d/
++# obj-$(CONFIG_ALLEGRO_VCU_DEC_DRIVER_MYLES) += al5d/
+ obj-m	+= dmaproxy/
++# obj-$(CONFIG_DMAPROXY_MYLES) += dmaproxy/
+ 
+ all:
+ 	$(MAKE) -C $(KERNEL_SRC) M=$(SRC) O=$(O) modules
+diff --git a/al5d/Makefile b/al5d/Makefile
+index b8785c3..e6a7e51 100644
+--- a/al5d/Makefile
++++ b/al5d/Makefile
+@@ -3,6 +3,7 @@ AL_COMMON=../common
+ ccflags-y += -I$(src)/../include
+ 
+ obj-m += al5d.o
++# obj-$(CONFIG_ALLEGRO_VCU_DEC_DRIVER_MYLES) += al5d.o
+ 
+ al5d-objs := \
+ 	al_dec.o \
+diff --git a/al5d/al_dec.c b/al5d/al_dec.c
+index 7a5bcd6..6de6936 100644
+--- a/al5d/al_dec.c
++++ b/al5d/al_dec.c
+@@ -229,6 +229,9 @@ static int al5d_setup_codec_cdev(struct al5_codec_desc *codec, int minor)
+ 
+ static int al5d_codec_probe(struct platform_device *pdev)
+ {
++
++    myles_printk("[myles]al5d_codec_probe: attempt to probe al5d.\n");
++
+ 	int err;
+ 	static int current_minor;
+ 
+@@ -245,6 +248,7 @@ static int al5d_codec_probe(struct platform_device *pdev)
+ 		dev_err(&pdev->dev, "Failed to setup codec");
+ 		return err;
+ 	}
++	printk("[Myles]%s: about to call al5_codec_set_firmware.\n", __func__);
+ 	err = al5_codec_set_firmware(codec, AL5D_FIRMWARE,
+ 				     AL5D_BOOTLOADER_FIRMWARE);
+ 	if (err) {
+@@ -261,6 +265,8 @@ static int al5d_codec_probe(struct platform_device *pdev)
+ 	codec->minor = current_minor;
+ 	++current_minor;
+ 
++    myles_printk("[myles]al5d_codec_probe: al5d is now probed.\n");
++
+ 	return 0;
+ }
+ 
+@@ -277,6 +283,7 @@ static int al5d_codec_remove(struct platform_device *pdev)
+ }
+ 
+ static const struct of_device_id al5d_codec_of_match[] = {
++	// { .compatible = "al,al5d" },
+ 	{ .compatible = "al,al5d" },
+ 	{ /* sentinel */ },
+ };
+@@ -314,6 +321,9 @@ static void destroy_module_class(void)
+ 
+ static int __init al5d_codec_init(void)
+ {
++
++    myles_printk("[myles]al5d_codec_init: al5d driver init.\n");
++
+ 	int err;
+ 
+ 	err = setup_chrdev_region();
+@@ -342,4 +352,5 @@ MODULE_LICENSE("GPL v2");
+ MODULE_AUTHOR("Kevin Grandemange");
+ MODULE_AUTHOR("Sebastien Alaiwan");
+ MODULE_AUTHOR("Antoine Gruzelle");
++MODULE_AUTHOR("Myles Liu");
+ MODULE_DESCRIPTION("Allegro Codec Driver");
+diff --git a/al5e/Makefile b/al5e/Makefile
+index f660a1d..3b99658 100644
+--- a/al5e/Makefile
++++ b/al5e/Makefile
+@@ -3,6 +3,7 @@ AL_COMMON=../common
+ ccflags-y += -I$(src)/../include
+ 
+ obj-m += al5e.o
++# obj-$(CONFIG_ALLEGRO_VCU_ENC_DRIVER_MYLES) += al5e.o
+ 
+ al5e-objs := \
+ 	al_enc.o\
+diff --git a/al5e/al_enc.c b/al5e/al_enc.c
+index 9470e1d..102c163 100644
+--- a/al5e/al_enc.c
++++ b/al5e/al_enc.c
+@@ -48,6 +48,7 @@
+ 
+ #include "al_enc_ioctl.h"
+ #include "al_alloc_ioctl.h"
++#include "al_dmabuf.h"
+ #include "al_vcu.h"
+ #include "al_alloc.h"
+ #include "al_user.h"
+@@ -66,6 +67,8 @@ int max_users_nb = MAX_USERS_NB;
+ static int al5e_codec_major;
+ static int al5e_codec_nr_devs = AL5_NR_DEVS;
+ static struct class *module_class;
++unsigned int recorded_addr_4_enc = 0;
++unsigned int recorded_fd_4_enc = 0;
+ 
+ static int ioctl_usage(struct al5_user *user, unsigned int cmd)
+ {
+@@ -101,6 +104,9 @@ static long al5e_ioctl(struct file *filp, unsigned int cmd,
+ 		struct al5_buffer buffer_msg;
+ 		u32 rec_fd;
+ 	case AL_MCU_CONFIG_CHANNEL:
++
++        // myles_printk("[myles]%s: cmd: %s, %d.\n", __func__, "AL_MCU_CONFIG_CHANNEL", AL_MCU_CONFIG_CHANNEL);
++
+ 		ioctl_info("ioctl AL_MCU_CONFIG_CHANNEL from user %i",
+ 			   user->uid);
+ 		if (copy_from_user(&config_channel, (void *)arg,
+@@ -115,6 +121,9 @@ static long al5e_ioctl(struct file *filp, unsigned int cmd,
+ 		return ret;
+ 
+ 	case AL_MCU_DESTROY_CHANNEL:
++
++        // myles_printk("[myles]%s: cmd: %s, %d.\n", __func__, "AL_MCU_DESTROY_CHANNEL", AL_MCU_DESTROY_CHANNEL);
++
+ 		ioctl_info("ioctl AL_MCU_DESTROY_CHANNEL from user %i",
+ 			   user->uid);
+ 		ret = al5_user_destroy_channel(user, false);
+@@ -122,6 +131,9 @@ static long al5e_ioctl(struct file *filp, unsigned int cmd,
+ 		return ret;
+ 
+ 	case AL_MCU_WAIT_FOR_STATUS:
++
++        // myles_printk("[myles]%s: cmd: %s, %d.\n", __func__, "AL_MCU_WAIT_FOR_STATUS", AL_MCU_WAIT_FOR_STATUS);
++
+ 		ioctl_info("ioctl AL_MCU_WAIT_FOR_STATUS from user %i",
+ 			   user->uid);
+ 		if (copy_from_user(&encode_status, (void *)arg,
+@@ -135,11 +147,26 @@ static long al5e_ioctl(struct file *filp, unsigned int cmd,
+ 		return ret;
+ 
+ 	case AL_MCU_ENCODE_ONE_FRM:
++
++        // myles_printk("[myles]%s: cmd: %s, %d.\n", __func__, "AL_MCU_ENCODE_ONE_FRM", AL_MCU_ENCODE_ONE_FRM);
++
+ 		ioctl_info("ioctl AL_MCU_ENCODE_ONE_FRM from user %i",
+ 			   user->uid);
+ 		if (copy_from_user(&encode_msg, (void *)arg,
+ 				   sizeof(encode_msg)))
+ 			return -EFAULT;
++
++        // encode_msg.addresses.opaque_params[0] = 0xd000000;
++        // encode_msg.addresses.opaque_params[1] = 0xd0e1000;
++        // encode_msg.addresses.opaque_params[0] = 0x40000000;
++        // encode_msg.addresses.opaque_params[1] = 0x400e1000;
++        // encode_msg.addresses.opaque_params[1] = 0x4b000;
++
++        // for debugging only, sleeping 1 second
++        // #include <linux/delay.h>
++        // usleep_range(1000000, 1000001);
++
++        // myles_printk("[myles]%s: encoding one frame with chan_uid: %d, params size: %d, addresses size: %d, address 0: 0x%x, address 1: 0x%x, first_4_bytes: 0x%x.\n", __func__, user->chan_uid, encode_msg.params.size, encode_msg.addresses.size, encode_msg.addresses.opaque_params[0], encode_msg.addresses.opaque_params[1], *(volatile u32*)(phys_to_virt(encode_msg.addresses.opaque_params[0])));
+ 		ret = al5e_user_encode_one_frame(user, &encode_msg);
+ 		if (copy_to_user((void *)arg, &encode_msg, sizeof(encode_msg)))
+ 			return -EFAULT;
+@@ -147,6 +174,9 @@ static long al5e_ioctl(struct file *filp, unsigned int cmd,
+ 		return ret;
+ 
+ 	case AL_MCU_GET_REC_PICTURE:
++
++        // myles_printk("[myles]%s: cmd: %s, %d.\n", __func__, "AL_MCU_GET_REC_PICTURE", AL_MCU_GET_REC_PICTURE);
++
+ 		ioctl_info("ioctl AL_MCU_GET_REC from user %i", user->uid);
+ 		if (copy_from_user(&rec_msg, (void *)arg, sizeof(rec_msg)))
+ 			return -EFAULT;
+@@ -157,6 +187,9 @@ static long al5e_ioctl(struct file *filp, unsigned int cmd,
+ 		return ret;
+ 
+ 	case AL_MCU_RELEASE_REC_PICTURE:
++
++        // myles_printk("[myles]%s: cmd: %s, %d.\n", __func__, "AL_MCU_RELEASE_REC_PICTURE", AL_MCU_RELEASE_REC_PICTURE);
++
+ 		ioctl_info("ioctl AL_MCU_GET_REC from user %i", user->uid);
+ 		if (copy_from_user(&rec_fd, (void *)arg, sizeof(rec_fd)))
+ 			return -EFAULT;
+@@ -164,20 +197,94 @@ static long al5e_ioctl(struct file *filp, unsigned int cmd,
+ 		ioctl_info("end AL_MCU_GET_REC from user %i", user->uid);
+ 
+ 	case AL_MCU_PUT_STREAM_BUFFER:
++
++        // myles_printk("[myles]%s: cmd: %s, %d.\n", __func__, "AL_MCU_PUT_STREAM_BUFFER", AL_MCU_PUT_STREAM_BUFFER);
++
+ 		if (copy_from_user(&buffer_msg, (void *)arg,
+ 				   sizeof(buffer_msg)))
+ 			return -EFAULT;
++
+ 		return al5e_user_put_stream_buffer(user, &buffer_msg);
++        // return 0;
+ 
+ 	case GET_DMA_FD:
++    {
++        // myles_printk("[myles]%s: cmd: %s, %d.\n", __func__, "GET_DMA_FD", GET_DMA_FD);
++
++        // myles_printk("[myles]%s: dump_stack before.\n", __func__);
++        // dump_stack();
++        // myles_printk("[myles]%s: dump_stack after.\n", __func__);
++
+ 		ret = al5_ioctl_get_dma_fd(codec->device, arg);
+-		return ret;
++        // myles_printk("[myles]%s: al5_ioctl_get_dma_fd res: %d.\n", __func__, ret);
++
++        struct al5_dma_info info;
++        int err;
++
++        if (copy_from_user(&info, (struct al5_dma_info *)arg, sizeof(info)))
++            return -EFAULT;
++
++        err = al5_allocate_dmabuf(codec->device, info.size, &info.fd);
++        if (err)
++            return err;
++
++        err = al5_dmabuf_get_address(codec->device, info.fd, &info.phy_addr);
++        if (err)
++            return err;
++
++        // if (info.size >= 1511424) {
++        //     if (recorded_addr_4_enc) {
++        //         myles_printk("[myles]%s: for phy_addr, replacing 0x%lx with 0x%lx; for fd, replacing %d with %d.\n", __func__, info.phy_addr, recorded_addr_4_enc, info.fd, recorded_fd_4_enc);
++        //         // printk("[myles]%s: replacing 0x%lx with 0x%lx.\n", __func__, info.phy_addr, recorded_addr_4_enc);
++        //         info.phy_addr = recorded_addr_4_enc;
++        //         info.fd = recorded_fd_4_enc;
++        //     } else {
++        //         recorded_addr_4_enc = info.phy_addr;
++        //         recorded_fd_4_enc = info.fd;
++        //     }
++        // }
++
++        // myles_printk("[myles]%s: allocation size: %d, address: 0x%x.\n", __func__, info.size, info.phy_addr);
++		// printk("[myles]%s: allocation size: %d, address: 0x%x.\n", __func__, info.size, info.phy_addr);
++
++        if (copy_to_user((void *)arg, &info, sizeof(info)))
++            return -EFAULT;
+ 
+-	case GET_DMA_PHY:
+-		ret = al5_ioctl_get_dmabuf_dma_addr(codec->device, arg);
+ 		return ret;
++    }
++	case GET_DMA_PHY:
++    {
++        // myles_printk("[myles]%s: cmd: %s, %d.\n", __func__, "GET_DMA_PHY", GET_DMA_PHY);
++
++		// ret = al5_ioctl_get_dmabuf_dma_addr(codec->device, arg);
++
++        struct al5_dma_info info;
++        int err;
++
++        if (copy_from_user(&info, (struct al5_dma_info *)arg, sizeof(info)))
++            return -EFAULT;
++
++        err = al5_dmabuf_get_address(codec->device, info.fd, &info.phy_addr);
++        if (err)
++            return err;
++
++        // info.phy_addr = 0x40000000;
++        info.phy_addr = 0xc400000;
++
++        // myles_printk("[myles]%s: allocation size(?): %d, address: 0x%x, first_4_bytes: 0x%x.\n", __func__, info.size, info.phy_addr, *(volatile u32*)(phys_to_virt(info.phy_addr)));
++		// printk("[myles]%s: allocation size(?): %d, address: 0x%x, first_4_bytes: 0x%x.\n", __func__, info.size, info.phy_addr, *(volatile u32*)(phys_to_virt(info.phy_addr)));
+ 
++        if (copy_to_user((void *)arg, &info, sizeof(info)))
++            return -EFAULT;
++
++        return 0;
++
++		return ret;
++    }
+ 	default:
++
++        // myles_printk("[myles]%s: cmd: %s.\n", __func__, "default");
++
+ 		return ioctl_usage(user, cmd);
+ 	}
+ }
+@@ -214,6 +321,9 @@ static int al5e_setup_codec_cdev(struct al5_codec_desc *codec, int minor)
+ 
+ static int al5e_probe(struct platform_device *pdev)
+ {
++
++    myles_printk("[myles]al5e_probe: attempt to probe al5e.\n");
++
+ 	int err;
+ 	static int current_minor;
+ 
+@@ -230,6 +340,7 @@ static int al5e_probe(struct platform_device *pdev)
+ 		dev_err(&pdev->dev, "Failed to setup codec");
+ 		return err;
+ 	}
++	printk("[Myles]%s: about to call al5_codec_set_firmware.\n", __func__);
+ 	err = al5_codec_set_firmware(codec, AL5E_FIRMWARE,
+ 				     AL5E_BOOTLOADER_FIRMWARE);
+ 	if (err) {
+@@ -237,6 +348,9 @@ static int al5e_probe(struct platform_device *pdev)
+ 		al5_codec_tear_down(codec);
+ 		return err;
+ 	}
++
++    myles_printk("[myles]%s: suballoc_buf size: %d, suballoc_buf dma_handle: 0x%lx, icache size: %d, icache dma_handle: 0x%lx, dcache_base_addr: 0x%lx.\n", __func__, codec->suballoc_buf->size, codec->suballoc_buf->dma_handle, codec->icache->size, codec->icache->dma_handle, codec->dcache_base_addr);
++
+ 	err = al5e_setup_codec_cdev(codec, current_minor);
+ 	if (err) {
+ 		dev_err(&pdev->dev, "Failed to setup cdev");
+@@ -246,6 +360,8 @@ static int al5e_probe(struct platform_device *pdev)
+ 	codec->minor = current_minor;
+ 	++current_minor;
+ 
++    myles_printk("[myles]al5e_probe: al5e is now probed.\n");
++
+ 	return 0;
+ }
+ 
+@@ -262,6 +378,7 @@ static int al5e_remove(struct platform_device *pdev)
+ }
+ 
+ static const struct of_device_id al5e_of_match[] = {
++	// { .compatible = "al,al5e" },
+ 	{ .compatible = "al,al5e" },
+ 	{ /* sentinel */ },
+ };
+@@ -299,6 +416,9 @@ static void destroy_module_class(void)
+ 
+ static int __init al5e_init(void)
+ {
++
++    myles_printk("[myles]al5e_init: al5e driver init.\n");
++
+ 	int err;
+ 
+ 	err = setup_chrdev_region();
+@@ -327,4 +447,5 @@ MODULE_LICENSE("GPL v2");
+ MODULE_AUTHOR("Kevin Grandemange");
+ MODULE_AUTHOR("Sebastien Alaiwan");
+ MODULE_AUTHOR("Antoine Gruzelle");
+-MODULE_DESCRIPTION("Allegro Codec Driver");
++MODULE_AUTHOR("Myles Liu");
++MODULE_DESCRIPTION("Allegro Codec Driver modified by Myles");
+diff --git a/al5e/enc_user.c b/al5e/enc_user.c
+index 1c93660..3bec1c4 100644
+--- a/al5e/enc_user.c
++++ b/al5e/enc_user.c
+@@ -81,12 +81,17 @@ static int allocate_channel_buffers(struct al5_user *user,
+ 				   buffers.int_buffers_size);
+ 	if (err)
+ 		return err;
++
++    // myles_printk("[myles]%s: int_buffers created, count: %d, size: %d, first handle: 0x%lx.\n", __func__, buffers.int_buffers_count, buffers.int_buffers_size, user->int_buffers.buffers[0]->dma_handle);
++
+ 	err = al5_bufpool_allocate(&user->rec_buffers, user->device,
+ 				   buffers.rec_buffers_count,
+ 				   buffers.rec_buffers_size);
+ 	if (err)
+ 		return err;
+ 
++    // myles_printk("[myles]%s: rec_buffers created, count: %d, size: %d, first handle: 0x%lx.\n", __func__, buffers.rec_buffers_count, buffers.rec_buffers_size, user->rec_buffers.buffers[0]->dma_handle);
++
+ 	return 0;
+ }
+ 
+@@ -149,6 +154,7 @@ int al5e_user_create_channel(struct al5_user *user,
+ 			     struct al5_params *param,
+ 			     struct al5_channel_status *status)
+ {
++
+ 	struct al5e_feedback_channel fb_message = { 0 };
+ 	int err = mutex_lock_killable(&user->locks[AL5_USER_CREATE]);
+ 
+@@ -293,6 +299,7 @@ int al5e_user_put_stream_buffer(struct al5_user *user,
+ 			return error;
+ 		external_mv_mcu_vaddr = al5_mcu_get_virtual_address(
+ 			external_mv_buffer_info.bus_address);
++        // myles_printk("[myles]%s: external_mv_buffer_info.bus_address: 0x%x, external_mv_mcu_vaddr: 0x%x. \n", __func__, external_mv_buffer_info.bus_address, external_mv_mcu_vaddr);
+ 	}
+ 
+ 	mail = al5_mail_create(AL_MCU_MSG_PUT_STREAM_BUFFER, 32);
+@@ -303,7 +310,8 @@ int al5e_user_put_stream_buffer(struct al5_user *user,
+ 	al5_mail_write_word(mail, buffer->stream_buffer.size);
+ 	al5_mail_write_word(mail, buffer->stream_buffer.offset);
+ 	al5_mail_write(mail, &buffer->stream_buffer.stream_buffer_ptr, 8);
+-	al5_mail_write_word(mail, external_mv_mcu_vaddr);
++    // myles_printk("[myles]%s: stream_buffer_info.bus_address: 0x%x, stream_mcu_vaddr: 0x%x, stream_buffer_ptr: 0x%lx, size: %u, offset: %u.\n", __func__, stream_buffer_info.bus_address, stream_mcu_vaddr, buffer->stream_buffer.stream_buffer_ptr, buffer->stream_buffer.size, buffer->stream_buffer.offset);
++    al5_mail_write_word(mail, external_mv_mcu_vaddr);
+ 
+ 	return al5_check_and_send(user, mail);
+ }
+diff --git a/common/Makefile b/common/Makefile
+index f0c372d..e32a116 100644
+--- a/common/Makefile
++++ b/common/Makefile
+@@ -1,6 +1,7 @@
+ ccflags-y += -I$(src)/../include
+ 
+ obj-m += allegro.o
++# obj-$(CONFIG_ALLEGRO_MYLES) += allegro.o
+ 
+ allegro-objs := \
+ 	al_alloc.o \
+diff --git a/common/al_codec.c b/common/al_codec.c
+index 09cc265..78d21b8 100644
+--- a/common/al_codec.c
++++ b/common/al_codec.c
+@@ -46,6 +46,8 @@ static void set_icache_offset(struct al5_codec_desc *codec)
+ 	icache_offset_msb = (sizeof(dma_handle) == 4) ? msb : dma_handle >> 32;
+ 	al5_writel(icache_offset_lsb, AL5_ICACHE_ADDR_OFFSET_LSB);
+ 	al5_writel(icache_offset_msb, AL5_ICACHE_ADDR_OFFSET_MSB);
++
++    // myles_printk("[myles]%s: icache_offset_lsb: 0x%x, icache_offset_msb: 0x%x.\n", __func__, icache_offset_lsb, icache_offset_msb);
+ }
+ 
+ static void set_dcache_offset(struct al5_codec_desc *codec)
+@@ -64,8 +66,12 @@ static void set_dcache_offset(struct al5_codec_desc *codec)
+ 
+ 	al5_writel(dcache_offset_msb, AL5_DCACHE_ADDR_OFFSET_MSB);
+ 	al5_writel(dcache_offset_lsb, AL5_DCACHE_ADDR_OFFSET_LSB);
++
++    // myles_printk("[myles]%s: dcache_offset_msb: 0x%x, dcache_offset_lsb: 0x%x.\n", __func__, dcache_offset_msb, dcache_offset_lsb);
+ }
+ 
++int only_once = 0;
++#include <linux/dma-mapping.h>
+ static int copy_firmware(struct al5_codec_desc *codec,
+ 			 const struct firmware *fw,
+ 			 const struct firmware *bl_fw)
+@@ -84,7 +90,17 @@ static int copy_firmware(struct al5_codec_desc *codec,
+ 	}
+ 
+ 	memcpy(codec->icache->cpu_handle, fw->data, fw->size);
++	printk("[Myles]%s: writing to codec->icache->cpu_handle: 0x%016llx (phys: 0x%016llx, dma: 0x%016llx), size: %d.\n", __func__, codec->icache->cpu_handle, codec->icache->dma_handle, fw->size);
+ 	memcpy_toio_32(codec->regs, bl_fw->data, bl_fw->size);
++	printk("[Myles]%s: writing to codec->regs: 0x%016llx (phys: 0x%016llx), size: %d.\n", __func__, codec->regs, virt_to_phys(codec->regs), bl_fw->size);
++
++	if (!only_once)
++	{
++		int temp = 666;
++		memcpy((volatile void*)(phys_to_virt(0x800000000)), &temp, sizeof(temp));
++		++only_once;
++		printk("[Myles]%s: one and only...\n", __func__);
++	}
+ 
+ 	return 0;
+ }
+@@ -247,9 +263,14 @@ static int init_mcu(struct al5_codec_desc *codec, struct al5_user *root,
+ 		goto unlock;
+ 	}
+ 
++    // myles_printk("[myles]%s: mcu_memory_pool: %d, dma_handle: 0x%lx.\n", __func__, mcu_memory_pool, codec->suballoc_buf->dma_handle);
++
+ 	init_msg.addr = codec->suballoc_buf->dma_handle + MCU_CACHE_OFFSET;
+ 	init_msg.size = codec->suballoc_buf->size;
++
++    // myles_printk("[myles]%s: init_msg.addr: 0x%x, init_msg.size: %d.\n", __func__, init_msg.addr, init_msg.size);
+ 	set_l2_info(codec->device, &init_msg);
++
+ 	al5_info("l2 prefetch size:%d (bits), l2 color bitdepth:%d\n",
+ 		 init_msg.l2_size_in_bits, init_msg.l2_color_bitdepth);
+ 	init_msg.plugin_enabled = plugin_enabled;
+diff --git a/common/mcu_interface.c b/common/mcu_interface.c
+index 0e5762f..2fc9a3d 100644
+--- a/common/mcu_interface.c
++++ b/common/mcu_interface.c
+@@ -114,6 +114,7 @@ void al5_signal_mcu(struct mcu_mailbox_interface *mcu)
+ EXPORT_SYMBOL_GPL(al5_signal_mcu);
+ 
+ const u32 mcu_cache_offset = 0x80000000;
++// const u32 mcu_cache_offset = 0x40200000;
+ 
+ u32 al5_mcu_get_virtual_address(u32 physicalAddress)
+ {
+diff --git a/dmaproxy/Kconfig b/dmaproxy/Kconfig
+index 12c44dc..1387bfa 100644
+--- a/dmaproxy/Kconfig
++++ b/dmaproxy/Kconfig
+@@ -3,5 +3,5 @@ config DMAPROXY
+         depends on DMA_ENGINE
+         select DMA_ENGINE_RAID
+         help
+-          Simple DMA proxy client. Exports APIs to perform Mem2Mem DMA transfer
++          Simple DMA proxy client modified. Exports APIs to perform Mem2Mem DMA transfer
+ 	  To compile this driver as a module, choose M here.
+diff --git a/dmaproxy/Makefile b/dmaproxy/Makefile
+index cf83290..ed2c7ae 100644
+--- a/dmaproxy/Makefile
++++ b/dmaproxy/Makefile
+@@ -1 +1,2 @@
+ obj-m += dmaproxy.o
++# obj-$(CONFIG_DMAPROXY_MYLES) += dmaproxy.o
+diff --git a/dmaproxy/dmaproxy.c b/dmaproxy/dmaproxy.c
+index b37be4e..81fe7e7 100644
+--- a/dmaproxy/dmaproxy.c
++++ b/dmaproxy/dmaproxy.c
+@@ -26,6 +26,12 @@ static struct cdev dmaproxy_cdev;
+ static struct class *dmaproxy_cl;
+ #define MINOR_CNT 8
+ 
++// Myles: for debugging only
++int print_counter = 0;
++char char_arr_4_print[4];
++int current_writing_ptr = 0;
++int int_4_print;
++
+ struct dmacopy_done {
+ 	bool		done;
+ 	wait_queue_head_t       wait;
+@@ -115,6 +121,11 @@ static int dmabuf_get_address(struct dmaproxy_data *dmaproxy_data, dmaproxy_arg_
+ 	}
+ 
+ 	dmaproxy_data->src_buf = sg_dma_address(dmaproxy_data->src_sgt->sgl);
++	// dmaproxy_data->src_buf = 0xd400000;
++    
++    // myles_printk("[myles]%s: dump_stack before.\n", __func__);
++    // dump_stack();
++    // myles_printk("[myles]%s: dump_stack after.\n", __func__);
+ 
+ 	if (dmaproxy.dst_fd != dmaproxy.src_fd) {
+ 		dmaproxy_data->dst_dbuf = dma_buf_get(dmaproxy.dst_fd);
+@@ -147,14 +158,17 @@ static int dmabuf_get_address(struct dmaproxy_data *dmaproxy_data, dmaproxy_arg_
+ 		goto fail_align;
+ 	}
+ 
++    // myles_printk("[myles]%s: before offset, src_buf: 0x%lx, dst_buf: 0x%lx.\n", __func__, dmaproxy_data->src_buf, dmaproxy_data->dst_buf);
+ 	dmaproxy_data->src_buf = dmaproxy_data->src_buf + dmaproxy.src_offset;
+ 	dmaproxy_data->dst_buf = dmaproxy_data->dst_buf + dmaproxy.dst_offset;
+ 
++    // myles_printk("[myles]%s: before align, src_buf: 0x%lx, dst_buf: 0x%lx.\n", __func__, dmaproxy_data->src_buf, dmaproxy_data->dst_buf);
+ 	if (align)
+ 		dmaproxy_data->src_buf = PTR_ALIGN(dmaproxy_data->src_buf, align);
+ 	if (align)
+ 		dmaproxy_data->dst_buf = PTR_ALIGN(dmaproxy_data->dst_buf, align);
+ 
++    // myles_printk("[myles]%s: before return, src_buf: 0x%lx, dst_buf: 0x%lx.\n", __func__, dmaproxy_data->src_buf, dmaproxy_data->dst_buf);
+ 	return 0;
+ 
+ fail_align:
+@@ -227,6 +241,34 @@ static int perform_dma_copy(struct dmaproxy_data *dmaproxy_data, dmaproxy_arg_t
+ 	}
+ 	um->bidi_cnt++;
+ 
++    // For Myles's debugging only
++    // if (print_counter < 32) {
++    //     int temp_size_c;
++    //     for (temp_size_c = 0; temp_size_c < (um->len); temp_size_c += 1) {
++    //         // char_arr_4_print[current_writing_ptr++] = *(char*)(um->addr[0]);
++    //         printk("[myles]%s: %dth 4-byte trying to copy one byte from address: 0x%x.\n", __func__, print_counter, um->addr[0] + 32 + temp_size_c);
++    //         printk("[myles]%s: %dth 4-byte trying to print one byte: %s.\n", __func__, print_counter, *(char*)(um->addr[0] + 32 + temp_size_c));
++    //         memcpy(char_arr_4_print + (current_writing_ptr++), (char*)(um->addr[0] + 32 + temp_size_c), sizeof(char));
++    //         if ((current_writing_ptr == 4) && (print_counter < 32)) {
++    //             printk("[myles]%s: %dth 4-byte trying to copy four byte.\n", __func__, print_counter);
++    //             memcpy(&int_4_print, char_arr_4_print, 4);
++    //             printk("[myles]%s: %dth 4-byte (source: 0x%x, dst: 0x%x, offset: %d, total_size: %d): 0x%x.\n", __func__, print_counter, um->addr[0], um->addr[1], temp_size_c, um->len, int_4_print);
++    //             ++print_counter;
++    //             current_writing_ptr = 0;
++    //         }
++    //     }
++    // }
++
++    // if (print_counter++ < 64) {
++    //     printk("[myles]%s: %dth moving, src: 0x%x, dst: 0x%x, len: %d.\n", __func__, print_counter, um->addr[0], um->addr[1], um->len);
++    // }
++
++    ++print_counter;
++    if (((um->addr[0]) < 0x0D400000) || (((um->addr[0]) + (um->len)) > 0x0E2FFFFF))
++        printk("[myles]%s: %dth moving, violation src: 0x%x, dst: 0x%x, len: %d.\n", __func__, print_counter, um->addr[0], um->addr[1], um->len);
++    if (((um->addr[1]) < 0x0D400000) || (((um->addr[1]) + (um->len)) > 0x0E2FFFFF))
++        printk("[myles]%s: %dth moving, potential violation src: 0x%x, dst: 0x%x, len: %d.\n", __func__, print_counter, um->addr[0], um->addr[1], um->len);
++
+ 	flags = DMA_CTRL_ACK | DMA_PREP_INTERRUPT;
+ 	tx = dma_dev->device_prep_dma_memcpy(chan, um->addr[1], um->addr[0], um->len, flags);
+ 	if (!tx) {
+@@ -282,6 +324,8 @@ static long dmaproxy_ioctl(struct file *f, unsigned int cmd, unsigned long arg)
+ 			return -EFAULT;
+ 		}
+ 
++        // myles_printk("[myles]%s: going to use dma_device: %s.\n", __func__, dmaproxy_data->chan->device->dev->init_name);
++
+ 		if (dmabuf_get_address(dmaproxy_data, dmaproxy))
+ 			return -EINVAL;
+ 
+@@ -336,6 +380,8 @@ static int __init dma_proxy_init(void)
+ 		return PTR_ERR(dmaproxy_device);
+ 	}
+ 
++    myles_printk("[myles]dma_proxy_init: dmaproxy is now inited.\n");
++
+ 	return 0;
+ }
+ 
+@@ -351,5 +397,6 @@ module_init(dma_proxy_init)
+ module_exit(dma_proxy_exit)
+ 
+ MODULE_AUTHOR("Jeegar Patel <jeegar.patel@xilinx.com>");
+-MODULE_DESCRIPTION("Xilinx's zynqmp-dma Client Driver");
++MODULE_AUTHOR("Myles Liu");
++MODULE_DESCRIPTION("Xilinx's zynqmp-dma Client Driver modified by Myles");
+ MODULE_LICENSE("GPL v2");
+diff --git a/include/al_codec.h b/include/al_codec.h
+index b270183..90ea41d 100644
+--- a/include/al_codec.h
++++ b/include/al_codec.h
+@@ -79,6 +79,7 @@
+ /* MCU Cache */
+ #define MCU_SUBALLOCATOR_SIZE           (1024 * 1024 * 32)      /* 32 MB */
+ #define MCU_CACHE_OFFSET                0x80000000
++// #define MCU_CACHE_OFFSET                0x40200000
+ #define AL5_ICACHE_SIZE                 (1024 * 600)            /* 600 KB (for possible extensions) */
+ #define AL5_RC_PLUGIN_CODE_START (1024 * 512)
+ #define MCU_SRAM_SIZE                   0x8000                  /* 32 kB */

@@ -1,3 +1,230 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:11e619ab32fa38d13f878468d3d3c5570ef691b75efc30906b4adf0536d6aaf3
-size 8736
+diff --git a/exe_encoder/CodecUtils.cpp b/exe_encoder/CodecUtils.cpp
+index 674c8a6..a94073b 100644
+--- a/exe_encoder/CodecUtils.cpp
++++ b/exe_encoder/CodecUtils.cpp
+@@ -139,11 +139,14 @@ void WriteOneSection(std::ofstream& File, AL_TBuffer* pStream, int iSection, con
+ 
+     if(uRemSize < pCurSection->uLength)
+     {
++      printf("[myles]%s: (1) writing to file from addr: 0x%lx of size: %d.\n", __func__, pData + pCurSection->uOffset, uRemSize);
+       File.write((char*)(pData + pCurSection->uOffset), uRemSize);
++      printf("[myles]%s: (1) writing to file from addr: 0x%lx of size: %d.\n", __func__, pData, pCurSection->uLength - uRemSize);
+       File.write((char*)pData, pCurSection->uLength - uRemSize);
+     }
+     else
+     {
++      printf("[myles]%s: (2) writing to file from addr: 0x%lx of size: %d.\n", __func__, pData + pCurSection->uOffset, pCurSection->uLength);
+       File.write((char*)(pData + pCurSection->uOffset), pCurSection->uLength);
+     }
+   }
+diff --git a/exe_encoder/IpDevice.cpp b/exe_encoder/IpDevice.cpp
+index 8e6e235..d829da5 100644
+--- a/exe_encoder/IpDevice.cpp
++++ b/exe_encoder/IpDevice.cpp
+@@ -89,6 +89,8 @@ static shared_ptr<CIpDevice> createMcuIpDevice()
+ 
+   pScheduler = AL_SchedulerMcu_Create(AL_GetHardwareDriver(), pAllocator, g_EncDevicePath.c_str());
+ 
++  printf("[myles]%s: AL_SchedulerMcu is now created.\n", __func__);
++
+   if(!pScheduler)
+     throw std::runtime_error("Failed to create MCU scheduler");
+ 
+diff --git a/exe_encoder/main.cpp b/exe_encoder/main.cpp
+index aef6148..cb709fb 100644
+--- a/exe_encoder/main.cpp
++++ b/exe_encoder/main.cpp
+@@ -1062,6 +1062,8 @@ void SafeMain(int argc, char** argv)
+   auto pAllocator = pIpDevice->m_pAllocator.get();
+   auto pScheduler = pIpDevice->m_pScheduler;
+ 
++  printf("[myles]%s: going to allocate layers resources.\n", __func__);
++
+   // --------------------------------------------------------------------------------
+   // Allocate Layers resources
+   int frameBuffersCount = g_defaultMinBuffers + Settings.tChParam[0].tGopParam.uNumB;
+@@ -1077,6 +1079,7 @@ void SafeMain(int argc, char** argv)
+   for(size_t i = 0; i < layerRessources.size(); i++)
+     layerRessources[i].Init(cfg, frameBuffersCount, srcBuffersCount, i, pAllocator);
+ 
++  printf("[myles]%s: going to create encoder.\n", __func__);
+   // --------------------------------------------------------------------------------
+   // Create Encoder
+   enc.reset(new EncoderSink(cfg, pScheduler, pAllocator
+@@ -1092,6 +1095,7 @@ void SafeMain(int argc, char** argv)
+     firstSink = encFirstPassLA.get();
+   }
+ 
++  printf("[myles]%s: going to push created layer resources.\n", __func__);
+   // --------------------------------------------------------------------------------
+   // Push created layer resources
+   for(size_t i = 0; i < layerRessources.size(); i++)
+@@ -1106,6 +1110,7 @@ void SafeMain(int argc, char** argv)
+   if(!cfg.RunInfo.bitrateFile.empty())
+     enc->BitrateOutput = createBitrateWriter(cfg.RunInfo.bitrateFile, cfg);
+ 
++  printf("[myles]%s: going to set callbacks.\n", __func__);
+   // --------------------------------------------------------------------------------
+   // Set Callbacks
+   enc->m_InputChanged = ([&](int iInputIdx, int iLayerID) {
+@@ -1116,6 +1121,8 @@ void SafeMain(int argc, char** argv)
+     Rtos_SetEvent(layerRessources[0].hFinished);
+   });
+ 
++  printf("[myles]%s: sMd5Path: %s.\n", __func__, cfg.RunInfo.sMd5Path.c_str());
++
+   if(!cfg.RunInfo.sMd5Path.empty())
+   {
+     auto multisink = unique_ptr<MultiSink>(new MultiSink);
+@@ -1126,6 +1133,8 @@ void SafeMain(int argc, char** argv)
+ 
+   unique_ptr<RepeaterSink> prefetch;
+ 
++  printf("[myles]%s: g_numFrameToRepeat: %d.\n", g_numFrameToRepeat);
++
+   if(g_numFrameToRepeat > 0)
+   {
+     prefetch.reset(new RepeaterSink(g_numFrameToRepeat, cfg.RunInfo.iMaxPict));
+@@ -1165,20 +1174,21 @@ void SafeMain(int argc, char** argv)
+ 
+ int main(int argc, char** argv)
+ {
+-  try
+-  {
+-    SafeMain(argc, argv);
+-    return 0;
+-  }
+-  catch(codec_error const& error)
+-  {
+-    cerr << endl << "Codec error: " << error.what() << endl;
+-    return error.GetCode();
+-  }
+-  catch(runtime_error const& error)
+-  {
+-    cerr << endl << "Exception caught: " << error.what() << endl;
+-    return 1;
+-  }
++    printf("[myles]vcu-ctrl-sw exe_encoder main is called.\n");
++    try
++    {
++        SafeMain(argc, argv);
++        return 0;
++    }
++    catch(codec_error const& error)
++    {
++        cerr << endl << "Codec error: " << error.what() << endl;
++        return error.GetCode();
++    }
++    catch(runtime_error const& error)
++    {
++        cerr << endl << "Exception caught: " << error.what() << endl;
++        return 1;
++    }
+ }
+ 
+diff --git a/include/lib_common/BufferAPI.h b/include/lib_common/BufferAPI.h
+index 2dbae5b..a4fff7a 100644
+--- a/include/lib_common/BufferAPI.h
++++ b/include/lib_common/BufferAPI.h
+@@ -239,6 +239,11 @@ uint8_t* AL_Buffer_GetData(const AL_TBuffer* pBuf);
+ *****************************************************************************/
+ uint8_t* AL_Buffer_GetDataChunk(const AL_TBuffer* pBuf, int iChunkIdx);
+ 
++// Added by Myles for debugging
++AL_PADDR AL_Buffer_GetPhysicalAddress(const AL_TBuffer* hBuf);
++AL_PADDR AL_Buffer_GetPhysicalAddressChunk(const AL_TBuffer* hBuf, int iChunkIdx);
++
++
+ /*************************************************************************//*!
+    \brief Gets the buffer size. If the buffer contains multiple chunks,
+    return the size of the first chunk.
+diff --git a/lib_encode/EncSchedulerMcu.c b/lib_encode/EncSchedulerMcu.c
+index c923fb5..16fc7e5 100644
+--- a/lib_encode/EncSchedulerMcu.c
++++ b/lib_encode/EncSchedulerMcu.c
+@@ -324,6 +324,7 @@ static void createPutStreamMsg(struct al5_buffer* msg, AL_TBuffer* streamBuffer,
+ 
+ static void API_PutStreamBuffer(AL_IEncScheduler* pScheduler, AL_HANDLE hChannel, AL_TBuffer* streamBuffer, AL_64U streamUserPtr, uint32_t uOffset)
+ {
++//   printf("[myles]%s: AL_MCU_PUT_STREAM BUFFER is going to be called.\n", __func__);
+   AL_Assert(streamBuffer);
+   AL_TEncSchedulerMcu* scheduler = (AL_TEncSchedulerMcu*)pScheduler;
+   Channel* chan = (Channel*)hChannel;
+diff --git a/lib_fpga/DmaAllocLinux.c b/lib_fpga/DmaAllocLinux.c
+index 4504867..1df3866 100644
+--- a/lib_fpga/DmaAllocLinux.c
++++ b/lib_fpga/DmaAllocLinux.c
+@@ -180,11 +180,37 @@ static size_t AlignToPageSize(size_t zSize)
+   return zSize + pagesize - (zSize % pagesize);
+ }
+ 
++#include <execinfo.h>
++void print_trace()
++{
++  void *array[10];
++  char **strings;
++  int size, i;
++
++  size = backtrace (array, 10);
++  strings = backtrace_symbols (array, size);
++  if (strings != NULL)
++  {
++
++    printf ("[myles]: Obtained %d stack frames.\n", size);
++    for (i = 0; i < size; i++)
++      printf ("%s\n", strings[i]);
++  }
++
++  free (strings);
++}
++
+ /* Get a dmabuf fd representing a buffer of size pInfo->size */
+ static bool LinuxDma_GetDmaFd(AL_TAllocator* pAllocator, struct al5_dma_info* pInfo)
+ {
+   struct LinuxDmaCtx* pCtx = (struct LinuxDmaCtx*)pAllocator;
+ 
++//   printf("[myles]%s: going to call GET_DMA_FD from vcu-ctrl-sw.\n", __func__);
++
++//   printf("[myles]%s: before printing stack tree.\n", __func__);
++//   print_trace();
++//   printf("[myles]%s: after printing stack tree.\n", __func__);
++
+   if(ioctl(pCtx->fd, GET_DMA_FD, pInfo) == -1)
+   {
+     perror("GET_DMA_FD");
+@@ -215,6 +241,7 @@ static AL_HANDLE LinuxDma_Alloc(AL_TAllocator* pAllocator, size_t zSize)
+   size_t zMapSize = AlignToPageSize(zSize);
+   pDmaBuffer->info.size = zMapSize;
+ 
++//   printf("[myles]%s: going to call LinuxDma_GetDmaFd.\n", __func__);
+   if(!LinuxDma_GetDmaFd(pAllocator, &pDmaBuffer->info))
+     goto fail;
+ 
+@@ -241,6 +268,7 @@ int isAligned256B(AL_PADDR addr)
+ 
+ static struct DmaBuffer* OverAllocateAndAlign256B(AL_TAllocator* pAllocator, size_t zSize)
+ {
++//   printf("[myles]%s: going to call LinuxDma_Alloc.\n", __func__);
+   struct DmaBuffer* p = (struct DmaBuffer*)LinuxDma_Alloc(pAllocator, Ceil256B(zSize));
+ 
+   if(!p)
+@@ -256,6 +284,7 @@ static struct DmaBuffer* OverAllocateAndAlign256B(AL_TAllocator* pAllocator, siz
+ 
+ static AL_HANDLE LinuxDma_Alloc_256B_Aligned(AL_TAllocator* pAllocator, size_t zSize)
+ {
++//   printf("[myles]%s: going to call LinuxDma_Alloc.\n", __func__);
+   struct DmaBuffer* p = (struct DmaBuffer*)LinuxDma_Alloc(pAllocator, zSize);
+ 
+   if(!p)
+diff --git a/lib_rtos/lib_rtos.c b/lib_rtos/lib_rtos.c
+index 1b9d9e9..f6f67a3 100644
+--- a/lib_rtos/lib_rtos.c
++++ b/lib_rtos/lib_rtos.c
+@@ -587,6 +587,7 @@ void Rtos_DriverClose(void* drv)
+ 
+ int Rtos_DriverIoctl(void* drv, unsigned long int req, void* data)
+ {
++//   printf("[myles]%s: calling ioctl from vcu-ctrl-sw with req: %ld.\n", __func__, req);
+   int fd = (int)(intptr_t)drv;
+   return ioctl(fd, req, data);
+ }

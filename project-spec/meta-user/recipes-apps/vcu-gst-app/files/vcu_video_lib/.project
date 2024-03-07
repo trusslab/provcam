@@ -1,3 +1,25 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:975bc804397662cd90c9a7215d7938d6f764c966c4494cddaaeb922a47b97bea
-size 739
+<?xml version="1.0" encoding="UTF-8"?>
+<projectDescription>
+	<name>vcu_video_lib</name>
+	<comment>Created by SDK v2017.2</comment>
+	<projects>
+	</projects>
+	<buildSpec>
+		<buildCommand>
+			<name>org.eclipse.cdt.managedbuilder.core.genmakebuilder</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
+		<buildCommand>
+			<name>org.eclipse.cdt.managedbuilder.core.ScannerConfigBuilder</name>
+			<triggers>full,incremental,</triggers>
+			<arguments>
+			</arguments>
+		</buildCommand>
+	</buildSpec>
+	<natures>
+		<nature>org.eclipse.cdt.core.cnature</nature>
+		<nature>org.eclipse.cdt.managedbuilder.core.managedBuildNature</nature>
+		<nature>org.eclipse.cdt.managedbuilder.core.ScannerConfigNature</nature>
+	</natures>
+</projectDescription>

@@ -1,3 +1,402 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:2c76ef37cb5cc2b06d7cd725da33aaf8e7464fdc3bd957924398610e9b7f9bba
-size 15907
+diff --git a/.vscode/settings.json b/.vscode/settings.json
+new file mode 100644
+index 0000000..2ee0c3d
+--- /dev/null
++++ b/.vscode/settings.json
+@@ -0,0 +1,56 @@
++{
++    "files.associations": {
++        "stdexcept": "cpp",
++        "array": "cpp",
++        "atomic": "cpp",
++        "*.tcc": "cpp",
++        "cctype": "cpp",
++        "chrono": "cpp",
++        "clocale": "cpp",
++        "cmath": "cpp",
++        "condition_variable": "cpp",
++        "cstdarg": "cpp",
++        "cstddef": "cpp",
++        "cstdint": "cpp",
++        "cstdio": "cpp",
++        "cstdlib": "cpp",
++        "cstring": "cpp",
++        "ctime": "cpp",
++        "cwchar": "cpp",
++        "cwctype": "cpp",
++        "deque": "cpp",
++        "list": "cpp",
++        "unordered_map": "cpp",
++        "vector": "cpp",
++        "exception": "cpp",
++        "algorithm": "cpp",
++        "functional": "cpp",
++        "iterator": "cpp",
++        "map": "cpp",
++        "memory": "cpp",
++        "memory_resource": "cpp",
++        "optional": "cpp",
++        "ratio": "cpp",
++        "string": "cpp",
++        "string_view": "cpp",
++        "system_error": "cpp",
++        "tuple": "cpp",
++        "type_traits": "cpp",
++        "utility": "cpp",
++        "fstream": "cpp",
++        "future": "cpp",
++        "initializer_list": "cpp",
++        "iomanip": "cpp",
++        "iosfwd": "cpp",
++        "iostream": "cpp",
++        "istream": "cpp",
++        "limits": "cpp",
++        "mutex": "cpp",
++        "new": "cpp",
++        "ostream": "cpp",
++        "sstream": "cpp",
++        "streambuf": "cpp",
++        "thread": "cpp",
++        "typeinfo": "cpp"
++    }
++}
+\ No newline at end of file
+diff --git a/base/omx_component/omx_component.cpp b/base/omx_component/omx_component.cpp
+index ab832ef..628e14e 100644
+--- a/base/omx_component/omx_component.cpp
++++ b/base/omx_component/omx_component.cpp
+@@ -1187,6 +1187,8 @@ OMX_ERRORTYPE Component::AllocateBuffer(OMX_INOUT OMX_BUFFERHEADERTYPE** header,
+   if(transientState != TransientState::LoadedToIdle && !(port->isTransientToEnable))
+     throw OMX_ErrorIncorrectStateOperation;
+ 
++//   printf("[myles]%s: (1) going to allocate memory of size: %d.\n", size * sizeof(OMX_U8));
++
+   auto buffer = static_cast<OMX_U8*>(module->Allocate(size * sizeof(OMX_U8)));
+ 
+   if(!buffer)
+diff --git a/base/omx_component/omx_component_enc.cpp b/base/omx_component/omx_component_enc.cpp
+index 12cc6a9..cb8f84e 100644
+--- a/base/omx_component/omx_component_enc.cpp
++++ b/base/omx_component/omx_component_enc.cpp
+@@ -248,6 +248,26 @@ OMX_ERRORTYPE EncComponent::UseBuffer(OMX_OUT OMX_BUFFERHEADERTYPE** header, OMX
+   });
+ }
+ 
++#include <execinfo.h>
++void print_trace()
++{
++  void *array[20];
++  char **strings;
++  int size, i;
++
++  size = backtrace (array, 20);
++  strings = backtrace_symbols (array, size);
++  if (strings != NULL)
++  {
++
++    printf ("[myles]: Obtained %d stack frames.\n", size);
++    for (i = 0; i < size; i++)
++      printf ("%s\n", strings[i]);
++  }
++
++  free (strings);
++}
++
+ OMX_ERRORTYPE EncComponent::AllocateBuffer(OMX_INOUT OMX_BUFFERHEADERTYPE** header, OMX_IN OMX_U32 index, OMX_IN OMX_PTR app, OMX_IN OMX_U32 size)
+ {
+   OMX_TRY();
+@@ -262,6 +282,13 @@ OMX_ERRORTYPE EncComponent::AllocateBuffer(OMX_INOUT OMX_BUFFERHEADERTYPE** head
+ 
+   auto bufferHandlePort = GetBufferHandlePort(media, index);
+   bool dmaOnPort = (bufferHandlePort == BufferHandleType::BUFFER_HANDLE_FD);
++
++//   printf("[myles]%s: before printing stack tree.\n", __func__);
++//   print_trace();
++//   printf("[myles]%s: after printing stack tree.\n", __func__);
++
++//   printf("[myles]%s: going to allocate memory of size: %d.\n", __func__, size * sizeof(OMX_U8));
++
+   auto buffer = dmaOnPort ? reinterpret_cast<OMX_U8*>(ToEncModule(*module).AllocateDMA(size * sizeof(OMX_U8))) : static_cast<OMX_U8*>(module->Allocate(size * sizeof(OMX_U8)));
+ 
+   if(dmaOnPort ? (static_cast<int>((intptr_t)buffer) < 0) : !buffer)
+diff --git a/exe_omx/encoder/main.cpp b/exe_omx/encoder/main.cpp
+index e3a1ff1..0b71e50 100644
+--- a/exe_omx/encoder/main.cpp
++++ b/exe_omx/encoder/main.cpp
+@@ -557,8 +557,9 @@ static OMX_ERRORTYPE onOutputBufferAvailable(OMX_HANDLETYPE hComponent, OMX_PTR
+ 
+     if(data)
+     {
+-      outfile.write((char*)data, pBufferHdr->nFilledLen);
+-      outfile.flush();
++        printf("[myles]%s: pBuffer: 0x%lx, nOffset: %d, zMapSize: %d, nFilledLen: %d.\n", __func__, pBufferHdr->pBuffer, pBufferHdr->nOffset, zMapSize, pBufferHdr->nFilledLen);
++        outfile.write((char*)data, pBufferHdr->nFilledLen);
++        outfile.flush();
+     }
+ 
+     Buffer_UnmapData(data, zMapSize, app->output.isDMA);
+@@ -630,6 +631,7 @@ static void allocBuffers(OMX_U32 nPortIndex, Application& app)
+   for(auto nbBuf = 0; nbBuf < minBuf; nbBuf++)
+   {
+     OMX_BUFFERHEADERTYPE* pBufHeader;
++    printf("[myles]%s: going to call OMX_AllocateBuffer with size: %d, nbBuf: %d, minBuf: %d.", __func__, nbBuf, minBuf);
+     OMX_AllocateBuffer(app.hEncoder, &pBufHeader, nPortIndex, &app, size);
+     isInput ? app.input.buffers.push_back(pBufHeader) : app.output.buffers.push_back(pBufHeader);
+   }
+@@ -879,19 +881,20 @@ static OMX_ERRORTYPE safeMain(int argc, char** argv)
+ 
+ int main(int argc, char** argv)
+ {
+-  try
+-  {
+-    if(safeMain(argc, argv) != OMX_ErrorNone)
++    printf("[myles]vcu-omx-il encoder main is called.\n");
++    try
+     {
+-      cerr << "Fatal error" << endl;
+-      return EXIT_FAILURE;
++        if(safeMain(argc, argv) != OMX_ErrorNone)
++        {
++            cerr << "Fatal error" << endl;
++            return EXIT_FAILURE;
++        }
++        return EXIT_SUCCESS;
++    }
++    catch(runtime_error const& error)
++    {
++        cerr << endl << "Exception caught: " << error.what() << endl;
++        return EXIT_FAILURE;
+     }
+-    return EXIT_SUCCESS;
+-  }
+-  catch(runtime_error const& error)
+-  {
+-    cerr << endl << "Exception caught: " << error.what() << endl;
+-    return EXIT_FAILURE;
+-  }
+ }
+ 
+diff --git a/module/dma_memory.cpp b/module/dma_memory.cpp
+index 495f73c..f5cbf6b 100644
+--- a/module/dma_memory.cpp
++++ b/module/dma_memory.cpp
+@@ -18,12 +18,13 @@ extern "C"
+ 
+ DMAMemory::DMAMemory(char const* device)
+ {
+-  fd = ::open(device, O_RDWR);
++    printf("[myles]%s: going to open DMA device: %s.\n", __func__, device);
++    fd = ::open(device, O_RDWR);
+ 
+-  if(fd < 0)
+-  {
++    if(fd < 0)
++    {
+     LOG_ERROR(::strerror(errno) + std::string { ": '" } +std::string { device } +std::string { "'. DMA channel is not available, CPU move will be performed" });
+-  }
++    }
+ }
+ 
+ DMAMemory::~DMAMemory()
+@@ -32,32 +33,117 @@ DMAMemory::~DMAMemory()
+     ::close(fd);
+ }
+ 
++// The function below is for debugging only (Myles)
++#include <stdio.h>
++#include <stdlib.h>
++#include <execinfo.h>
++int dump_stack(void)
++{
++        int j, nptrs;
++        void *buffer[20];
++        char ** strings;
++
++        nptrs = backtrace(buffer,20);
++
++        printf("backtrace() returned %d addresses\n",nptrs);
++
++        strings = backtrace_symbols(buffer, nptrs);
++        if (strings == NULL) {
++                printf("error backtrace_symbols\n");
++                return -1;
++        }
++        for(j = 0; j<nptrs; j++)
++                printf("[%02d] %s\n",j,strings[j]);
++
++        free(strings);
++        return 0;
++}
++
+ void DMAMemory::move(AL_TBuffer* destination, int destination_offset, AL_TBuffer const* source, int source_offset, size_t size)
+ {
+-  if(fd < 0)
+-  {
+-    std::move(AL_Buffer_GetData(source) + source_offset, AL_Buffer_GetData(source) + source_offset + size, AL_Buffer_GetData(destination) + destination_offset);
+-    return;
+-  }
+-
+-  auto src_allocator = source->pAllocator;
+-  int src_fd = AL_LinuxDmaAllocator_GetFd((AL_TLinuxDmaAllocator*)src_allocator, source->hBufs[0]);
+-
+-  auto dst_allocator = destination->pAllocator;
+-  int dst_fd = AL_LinuxDmaAllocator_GetFd((AL_TLinuxDmaAllocator*)dst_allocator, destination->hBufs[0]);
+-
+-  dmaproxy_arg_t dmaproxy {};
+-  dmaproxy.size = size;
+-  dmaproxy.dst_offset = destination_offset;
+-  dmaproxy.src_offset = source_offset;
+-  dmaproxy.src_fd = src_fd;
+-  dmaproxy.dst_fd = dst_fd;
+-
+-  if(::ioctl(fd, DMAPROXY_COPY, &dmaproxy) < 0)
+-  {
+-    LOG_WARNING(::strerror(errno) + std::string { ": DMA channel is not available, CPU move will be performed" });
+-    std::move(AL_Buffer_GetData(source) + source_offset, AL_Buffer_GetData(source) + source_offset + size, AL_Buffer_GetData(destination) + destination_offset);
+-  }
++    if(fd < 0)
++    {
++        std::move(AL_Buffer_GetData(source) + source_offset, AL_Buffer_GetData(source) + source_offset + size, AL_Buffer_GetData(destination) + destination_offset);
++        return;
++    }
++
++    auto src_allocator = source->pAllocator;
++    int src_fd = AL_LinuxDmaAllocator_GetFd((AL_TLinuxDmaAllocator*)src_allocator, source->hBufs[0]);
++
++    auto dst_allocator = destination->pAllocator;
++    int dst_fd = AL_LinuxDmaAllocator_GetFd((AL_TLinuxDmaAllocator*)dst_allocator, destination->hBufs[0]);
++
++    dmaproxy_arg_t dmaproxy {};
++    dmaproxy.size = size;
++    dmaproxy.dst_offset = destination_offset;
++    dmaproxy.src_offset = source_offset;
++    dmaproxy.src_fd = src_fd;
++    dmaproxy.dst_fd = dst_fd;
++
++    // printf("[myles]%s: size: %d, dst: 0x%lx (phy: 0x%lx), dst_offset: 0x%lx, src: 0x%lx (phy: 0x%lx), src_offset: 0x%lx, src_fd: %d, dst_fd: %d.\n", __func__, dmaproxy.size, AL_Buffer_GetData(destination), AL_Buffer_GetPhysicalAddress(destination), dmaproxy.dst_offset, AL_Buffer_GetData(source), AL_Buffer_GetPhysicalAddress(source), dmaproxy.src_offset, dmaproxy.src_fd, dmaproxy.dst_fd);
++
++    // if (print_counter == 0){
++    //     printf("[myles]%s: dump_stack before.\n", __func__);
++    //     dump_stack();
++    //     printf("[myles]%s: dump_stack after.\n", __func__);
++    // }
++
++    // std::move(AL_Buffer_GetData(source) + source_offset, AL_Buffer_GetData(source) + source_offset + size, AL_Buffer_GetData(destination) + destination_offset);
++
++    // print_counter = 0;
++    // ++moving_round_counter;
++    // current_writing_ptr = 0;
++    // // if ((moving_round_counter > 10) && (moving_round_counter < 28)) {
++    // if (moving_round_counter < 18) {
++    //     for (int temp_size_c = 0; temp_size_c < size; ++temp_size_c) {
++    //         char_arr_4_print[current_writing_ptr++] = *(char*)(AL_Buffer_GetData(source) + source_offset + temp_size_c);
++
++    //         // Slice seperation (0x100000) print (3-byte)
++    //         if ((current_writing_ptr == 3) && (char_arr_4_print[0] == 0x00) && (char_arr_4_print[1] == 0x00) && (char_arr_4_print[2] == 0x01)) {
++    //             char_arr_4_print[3] = 0x00; // generated extra 1-byte for just printing
++    //             memcpy(&int_4_print, char_arr_4_print, 4);
++    //             printf("[myles]%s: %dth, %dth 3-byte(total: %dth) (src: %d, src_offset: %d, offset: %d, size: %d): 0x%x.\n", __func__, moving_round_counter, ++print_counter, ++total_print_counter, source, source_offset, temp_size_c, size, int_4_print);
++    //             current_writing_ptr = 0;
++    //             continue;
++    //         }
++
++    //         // Print first valid 3 bytes
++    //         if ((moving_round_counter == 3) && (print_counter == 2) && (current_writing_ptr == 3)) {
++    //             for (; current_writing_ptr < 4; ++current_writing_ptr)
++    //                 char_arr_4_print[current_writing_ptr] = 0;
++    //             memcpy(&int_4_print, char_arr_4_print, 4);
++    //             printf("[myles]%s: %dth, %dth 3-byte(total: %dth) (src: %d, src_offset: %d, offset: %d, size: %d): 0x%x.\n", __func__, moving_round_counter, ++print_counter, ++total_print_counter, source, source_offset, temp_size_c, size, int_4_print);
++    //             current_writing_ptr = 0;
++    //             continue;
++    //         }
++
++    //         if ((current_writing_ptr == 4) && (print_counter < 1000)) {
++    //             memcpy(&int_4_print, char_arr_4_print, 4);
++    //             printf("[myles]%s: %dth, %dth 4-byte(total: %dth) (src: %d, src_offset: %d, offset: %d, size: %d): 0x%x.\n", __func__, moving_round_counter, ++print_counter, ++total_print_counter, source, source_offset, temp_size_c, size, int_4_print);
++    //             current_writing_ptr = 0;
++    //         } else if ((temp_size_c + 1 == size) && (print_counter < 1000))
++    //         {
++    //             int temp_current_num_of_bytes = current_writing_ptr;
++    //             for (; current_writing_ptr < 4; ++current_writing_ptr)
++    //                 char_arr_4_print[current_writing_ptr] = 0;
++    //             memcpy(&int_4_print, char_arr_4_print, 4);
++    //             printf("[myles]%s: %dth, %dth %d-byte(total: %dth) (src: %d, src_offset: %d, offset: %d, size: %d): 0x%x.\n", __func__, moving_round_counter, ++print_counter, temp_current_num_of_bytes, ++total_print_counter, source, source_offset, temp_size_c, size, int_4_print);
++    //             current_writing_ptr = 0;
++    //             break;
++    //         } else if (print_counter >= 1000)
++    //             break;
++    //     }
++    // }
++
++    if(::ioctl(fd, DMAPROXY_COPY, &dmaproxy) < 0)
++    {
++        LOG_WARNING(::strerror(errno) + std::string { ": DMA channel is not available, CPU move will be performed" });
++        std::move(AL_Buffer_GetData(source) + source_offset, AL_Buffer_GetData(source) + source_offset + size, AL_Buffer_GetData(destination) + destination_offset);
++        // printf("[myles]%s: cpu_move of size: %d success.\n", __func__, size);
++    } else 
++    {
++        // printf("[myles]%s: dma_move of size: %d success.\n", __func__, size);
++    }
+ }
+ 
+ void DMAMemory::set(AL_TBuffer* destination, int destination_offset, int value, size_t size)
+diff --git a/module/dma_memory.h b/module/dma_memory.h
+index 8984eed..5a4dbb7 100644
+--- a/module/dma_memory.h
++++ b/module/dma_memory.h
+@@ -4,11 +4,20 @@
+ 
+ struct DMAMemory final : MemoryInterface
+ {
+-  explicit DMAMemory(char const* device);
+-  ~DMAMemory() override;
+-  void move(AL_TBuffer* destination, int destination_offset, AL_TBuffer const* source, int source_offset, size_t size) override;
+-  void set(AL_TBuffer* destination, int destination_offset, int value, size_t size) override;
++    explicit DMAMemory(char const* device);
++    ~DMAMemory() override;
++    void move(AL_TBuffer* destination, int destination_offset, AL_TBuffer const* source, int source_offset, size_t size) override;
++    void set(AL_TBuffer* destination, int destination_offset, int value, size_t size) override;
+ 
+ private:
+-  int fd;
++    int fd;
++  
++    // Myles: for debugging only
++    int is_fixed_bytes_skipped = 0;
++    int print_counter = 0;
++    int total_print_counter = 0;
++    int moving_round_counter = 0;
++    char char_arr_4_print[4];
++    int current_writing_ptr = 0;
++    int int_4_print;
+ };
+diff --git a/module/module_enc.cpp b/module/module_enc.cpp
+index 754d184..9daef2f 100644
+--- a/module/module_enc.cpp
++++ b/module/module_enc.cpp
+@@ -113,6 +113,8 @@ void EncModule::InitEncoders(int numPass)
+ {
+   encoders.clear();
+ 
++  printf("[myles]%s: initing the encoder with numPass: %d.\n", __func__, numPass);
++
+   for(int pass = 0; pass < numPass; pass++)
+   {
+     GenericEncoder encoderPass {
+@@ -125,6 +127,8 @@ void EncModule::InitEncoders(int numPass)
+ 
+       auto requiredBuffers = AL_IS_AVC(media->settings.tChParam[0].eProfile) ? 2 : 1;
+ 
++      printf("[myles]%s: initing the encoder with requiredBuffers: %d.\n", __func__, requiredBuffers);
++
+       for(int i = 0; i < requiredBuffers; i++)
+       {
+         BufferSizes bufferSizes {};
+@@ -431,6 +435,7 @@ bool EncModule::Use(BufferHandleInterface* handle, unsigned char* buffer, int si
+   }
+   else if(size)
+   {
++    printf("[myles]%s: going to call AL_Buffer_Create_And_Allocate with size: %d.\n", __func__, size);
+     encoderBuffer = AL_Buffer_Create_And_Allocate(allocator.get(), size, AL_Buffer_Destroy);
+     shouldBeCopied.Add(encoderBuffer, buffer);
+   }

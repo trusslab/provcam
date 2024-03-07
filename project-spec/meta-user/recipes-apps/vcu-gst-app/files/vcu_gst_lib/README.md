@@ -1,3 +1,2 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:e18839681fccb47df9035c7736085f225f87fb7e1c2d6219de10860863d63575
-size 145
+# vcu_gst_lib
+VCU Gstreamer library constructs video pipeline from enabled elements. It provides API interface to GUI for configuration/control.
