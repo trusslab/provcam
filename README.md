@@ -3,20 +3,20 @@
 :paperclip: [ProvCam Paper](https://doi.org/10.1145/3636534.3649383) 
 
 :computer: [ProvCam Main Repository](https://github.com/trusslab/provcam)
-This repo hosts the documentation of ProvCam and other misc content. 
+This repo hosts the documentation of building and running ProvCam and other misc content. 
 
 :computer: [ProvCam Hardware Repository](https://github.com/trusslab/provcam_hw)
-This repo hosts ProvCam's hardware system design.
+This repo hosts ProvCam's hardware system design and its documentation.
 
 :computer: [ProvCam Firmware Repository](https://github.com/trusslab/provcam_ctrl)
-This repo hosts firmware running the microcontroller of ProvCam trusted camera module.
+This repo hosts firmware running the microcontroller of ProvCam trusted camera module and its documentation.
 
 :computer: [ProvCam OS Repository](https://github.com/trusslab/provcam_linux)
-This repo hosts OS(a custom version of Petalinux) running on ProvCam's system. 
-Notice that the OS represents the main camera OS, which is untrusted in ProvCam. 
+This repo hosts OS(a custom version of Petalinux) running on ProvCam's system and its documentation. 
+Note that the OS represents the main camera OS, which is untrusted in ProvCam. 
 
 :computer: [ProvCam Software Repository](https://github.com/trusslab/provcam_libs/tree/main)
-This repo hosts some software and libraries running in the OS.
+This repo hosts some software and libraries running in the OS and their documentation.
 
 Authors: \
 [Yuxin (Myles) Liu](https://lab.donkeyandperi.net/~yuxinliu/) (UC Irvine)\
@@ -257,3 +257,6 @@ https://docs.xilinx.com/r/en-US/ug1144-petalinux-tools-reference-guide/Introduct
 https://www.xilinx.com/products/boards-and-kits/zcu106.html
 https://leopardimaging.com/product/platform-partners/amd/li-imx274mipi-fmc/
 https://xilinx-wiki.atlassian.net/wiki/spaces/A/pages/460948332/Zynq+UltraScale+MPSoC+VCU+TRD+2020.1
+
+https://github.com/ZipCPU/wb2axip
+https://github.com/secworks/sha256
