@@ -37,10 +37,19 @@ We provide a step-by-step guide to recreate ProvCam's hardware and software prot
 - [ProvCam](#provcam-a-camera-module-with-self-contained-tcb-for-producing-verifiable-videos)
     - [Table of Contents](#table-of-contents)
     - [System Requirements](#system-requirements)
+        - [Hardware](#hardware)
+        - [Xilinx Vivado and Vitis](#xilinx-vivado-and-vitis)
+        - [Xilinx Petalinux](#xilinx-petalinux)
+        - [Misc.](#misc)
     - [Hardware Design](#hadware-design)
     - [Firmware](#firmware)
     - [OS](#os)
-    - [Run & Debug](#run--debug)
+    - [Run](#run)
+        - [Preparing the SD Card](#preparing-the-sd-card)
+        - [Hardware Preparation](#hardware-preparation)
+        - [Preparing the UART Consoles](#preparing-the-uart-consoles)
+        - [Preparing the Vitis Debug Environment](#preparing-the-vitis-debug-environment)
+        - [Running ProvCam](#running-provcam)
 
 ## System Requirements
 
