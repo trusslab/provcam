@@ -170,11 +170,11 @@ This sub-section is supposed to be done using MACHINE_1.
 1. Insert the SD card and mount it to `<PATH_TO_PROVCAM_SDCARD>`. (Note that the SD card should be formatted to FAT32)
 2. You have two options in this step:\
 If you choose to follow this manual step by step, please use the following option A:\
-A-1. Navigate to `cd <PATH_TO_PROVCAM_PETALINUX_IMAGES>` and copy `BOOT.BIN`, `image.ub` and `boot.scr` to the SD card: `cp BOOT.BIN image.ub boot.scr <PATH_TO_PROVCAM_SDCARD>/`.
-A-2. Navigate to `cd <PATH_TO_PROVCAM_MISC_SRC>/precompiled/sdcard/` and copy config files to the SD card: `cp -r config/ <PATH_TO_PROVCAM_SDCARD>/`.
+A-1. Navigate to `cd <PATH_TO_PROVCAM_PETALINUX_IMAGES>` and copy `BOOT.BIN`, `image.ub` and `boot.scr` to the SD card: `cp BOOT.BIN image.ub boot.scr <PATH_TO_PROVCAM_SDCARD>/`.\
+A-2. Navigate to `cd <PATH_TO_PROVCAM_MISC_SRC>/precompiled/sdcard/` and copy config files to the SD card: `cp -r config/ <PATH_TO_PROVCAM_SDCARD>/`.\
 If you choose to use the precompiled images, please use the following option B:\
-B-1. If not done yet, clone the misc repo first (`git clone https://github.com/trusslab/provcam.git`) to `<PATH_TO_PROVCAM_MISC_SRC>`.
-B-2. Navigate to `cd <PATH_TO_PROVCAM_MISC_SRC>/precompiled/sdcard/` and copy everything to the SD card: `cp -r * <PATH_TO_PROVCAM_SDCARD>/`. (Note that we store one of the image files `image.ub` with Git LFS, so please make sure you have Git LFS installed and the image file is properly downloaded)
+B-1. If not done yet, clone the misc repo first (`git clone https://github.com/trusslab/provcam.git`) to `<PATH_TO_PROVCAM_MISC_SRC>`.\
+B-2. Navigate to `cd <PATH_TO_PROVCAM_MISC_SRC>/precompiled/sdcard/` and copy everything to the SD card: `cp -r * <PATH_TO_PROVCAM_SDCARD>/`. (Note that we store one of the image files `image.ub` with Git LFS, so please make sure you have Git LFS installed and the image file is properly downloaded)\
 3. Unmount the SD card and insert it into the ZCU106 board.
 
 ### Hardware Preparation
